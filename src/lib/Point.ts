@@ -1,8 +1,10 @@
 import {Serializable} from './interface/Serializable'
 import {Position} from './interface/Position'
+import { Vector } from './utils/vector';
 export class Point implements Serializable, Position{
     x: number = 0
     y: number = 0
+    pos: Vector
     constructor (pos?: {x: number, y: number}) {
         if (pos) {
             const {x, y} = pos
@@ -26,4 +28,7 @@ export class Point implements Serializable, Position{
     moveX (distance: number) : void{}
     moveY (distance: number) : void{}
     moveTo (pos: {x: number , y: number}) : void{}
+    transform () : void {
+        
+    }
 }

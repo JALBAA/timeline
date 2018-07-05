@@ -35,14 +35,22 @@ export class Line extends Container {
     }
     draw (ctx: CanvasRenderingContext2D) {
         this.beforeDraw(ctx)
-        this.children.forEach(item => item.draw(ctx))
+        this.children.forEach(item => {
+            // item.transform()
+            item.draw(ctx)
+        })
         this.afterDraw(ctx)
     }
     afterDraw (ctx: CanvasRenderingContext2D) {
         ctx.restore()
     }
+    transform () : void {
+        
+    }
     move (pos: {x: number, y: number}) : void{}
-    moveX (distance: number) : void{}
+    moveX (distance: number) : void {
+        this.x += distance
+    }
     moveY (distance: number) : void{}
     moveTo (pos: {x: number , y: number}) : void{}
 }

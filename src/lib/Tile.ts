@@ -72,9 +72,6 @@ export class Tile extends Container {
         this.points[3].x = x
         this.points[3].y = y + height
     }
-    beforeDraw (ctx: CanvasRenderingContext2D) {
-        ctx.save()
-    }
     draw (ctx: CanvasRenderingContext2D) {
         this.beforeDraw(ctx)
         ctx.beginPath()
@@ -86,7 +83,7 @@ export class Tile extends Container {
         ctx.stroke()
         this.afterDraw(ctx)
     }
-    afterDraw (ctx: CanvasRenderingContext2D) {
-        ctx.restore()
+    transform () : void {
+        
     }
 }

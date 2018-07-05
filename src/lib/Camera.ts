@@ -1,7 +1,9 @@
 import {Position} from './interface/Position'
+import { Vector } from './utils/vector';
 export class Camera implements Position{
     x: number
     y: number
+    pos: Vector
     private viewport: CanvasRenderingContext2D
     moveX (distance: number) {
         this.move({
@@ -22,6 +24,9 @@ export class Camera implements Position{
         this.viewport.translate(x, y)
     }
     moveTo (pos: {x: number, y: number}) {
+        
+    }
+    transform () : void {
         
     }
 }

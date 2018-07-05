@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -70,52 +70,41 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const Point_1 = __webpack_require__(1);
-const Tile_1 = __webpack_require__(2);
-const Line_1 = __webpack_require__(5);
-const Stage_1 = __webpack_require__(3);
-const stage = new Stage_1.Stage({
-    width: 1000,
-    height: 700,
-});
-document.body.appendChild(stage.getViewport());
-const tile = new Tile_1.Tile;
-const tile2 = new Tile_1.Tile;
-const line = new Line_1.Line;
-stage.add(line);
-stage.add(tile);
-let angle = 0;
-let i = 5;
-let direction = 1;
-stage.render();
-stage.onRenderFrame(() => {
-    angle += 10;
-    const radian = Math.PI / 180 * angle;
-    const x = 100 * Math.cos(radian) + 100;
-    const y = 100 * Math.sin(radian) + 100;
-    if (direction == 1) {
-        i++;
-        if (i == 10) {
-            direction = 0;
-        }
-        line.grow();
+class Container {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.parent = null;
+        this.children = new Set;
     }
-    if (direction == 0) {
-        i--;
-        if (i == 0) {
-            direction = 1;
-        }
-        line.shrink();
+    beforeDraw(ctx) {
+        ctx.save();
     }
-    tile.moveTo(new Point_1.Point({
-        x,
-        y,
-    }));
-    tile2.moveTo({
-        x: x + 200,
-        y: y + 200,
-    });
-});
+    draw(ctx) {
+        this.beforeDraw(ctx);
+        this.transform();
+        this.children.forEach(child => {
+            child.draw(ctx);
+        });
+        this.afterDraw(ctx);
+    }
+    afterDraw(ctx) {
+        ctx.restore();
+    }
+    add(child) {
+        this.children.add(child);
+    }
+    remove(child) {
+        this.children.delete(child);
+    }
+    move(pos) { }
+    moveX(distance) { }
+    moveY(distance) { }
+    moveTo(pos) { }
+    transform() {
+    }
+}
+exports.Container = Container;
 
 
 /***/ }),
@@ -151,6 +140,8 @@ class Point {
     moveX(distance) { }
     moveY(distance) { }
     moveTo(pos) { }
+    transform() {
+    }
 }
 exports.Point = Point;
 
@@ -163,8 +154,8 @@ exports.Point = Point;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const Point_1 = __webpack_require__(1);
-const global_1 = __webpack_require__(4);
-const Container_1 = __webpack_require__(6);
+const global_1 = __webpack_require__(3);
+const Container_1 = __webpack_require__(0);
 class Tile extends Container_1.Container {
     constructor() {
         super();
@@ -235,9 +226,6 @@ class Tile extends Container_1.Container {
         this.points[3].x = x;
         this.points[3].y = y + height;
     }
-    beforeDraw(ctx) {
-        ctx.save();
-    }
     draw(ctx) {
         this.beforeDraw(ctx);
         ctx.beginPath();
@@ -249,8 +237,7 @@ class Tile extends Container_1.Container {
         ctx.stroke();
         this.afterDraw(ctx);
     }
-    afterDraw(ctx) {
-        ctx.restore();
+    transform() {
     }
 }
 exports.Tile = Tile;
@@ -263,7 +250,147 @@ exports.Tile = Tile;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const Container_1 = __webpack_require__(6);
+var Global;
+(function (Global) {
+    Global[Global["unit"] = 40] = "unit";
+})(Global = exports.Global || (exports.Global = {}));
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Point_1 = __webpack_require__(1);
+const Tile_1 = __webpack_require__(2);
+const Line_1 = __webpack_require__(5);
+const Stage_1 = __webpack_require__(6);
+const stage = new Stage_1.Stage({
+    width: 1000,
+    height: 700,
+});
+document.body.appendChild(stage.getViewport());
+const tile = new Tile_1.Tile;
+const tile2 = new Tile_1.Tile;
+const line = new Line_1.Line;
+stage.add(line);
+stage.add(tile);
+let angle = 0;
+let i = 5;
+let direction = 1;
+stage.render();
+line.grow();
+line.grow();
+line.grow();
+line.grow();
+line.grow();
+line.grow();
+line.grow();
+line.grow();
+stage.onRenderFrame(() => {
+    angle += 10;
+    const radian = Math.PI / 180 * angle;
+    const x = 100 * Math.cos(radian) + 100;
+    const y = 100 * Math.sin(radian) + 100;
+    // if (direction == 1) {
+    //     i++
+    //     if (i == 10) {
+    //         direction = 0
+    //     }
+    //     line.grow()
+    // }
+    line.moveX(1);
+    // if (direction == 0) {
+    //     i--
+    //     if (i == 0) {
+    //         direction = 1
+    //     }
+    //     line.shrink()
+    // }
+    tile.moveTo(new Point_1.Point({
+        x,
+        y,
+    }));
+    tile2.moveTo({
+        x: x + 200,
+        y: y + 200,
+    });
+});
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const global_1 = __webpack_require__(3);
+const Tile_1 = __webpack_require__(2);
+const Container_1 = __webpack_require__(0);
+class Line extends Container_1.Container {
+    constructor() {
+        super();
+        this.x = 0;
+        this.y = 0;
+        this.height = 1;
+        this.parent = null;
+        this.children = new Set;
+        this.tiles = [];
+        const tile = new Tile_1.Tile;
+        this.grow();
+    }
+    get width() {
+        return this.children.size * global_1.Global.unit;
+    }
+    grow() {
+        const tile = new Tile_1.Tile;
+        tile.moveTo({
+            x: this.x + this.width,
+            y: this.y
+        });
+        this.children.add(tile);
+        this.tiles.push(tile);
+    }
+    shrink() {
+        this.children.delete(this.tiles.pop());
+    }
+    beforeDraw(ctx) {
+        ctx.save();
+    }
+    draw(ctx) {
+        this.beforeDraw(ctx);
+        this.children.forEach(item => {
+            // item.transform()
+            item.draw(ctx);
+        });
+        this.afterDraw(ctx);
+    }
+    afterDraw(ctx) {
+        ctx.restore();
+    }
+    transform() {
+    }
+    move(pos) { }
+    moveX(distance) {
+        this.x += distance;
+    }
+    moveY(distance) { }
+    moveTo(pos) { }
+}
+exports.Line = Line;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Container_1 = __webpack_require__(0);
 class Root extends Container_1.Container {
     constructor() {
         super(...arguments);
@@ -328,114 +455,6 @@ class Stage {
     }
 }
 exports.Stage = Stage;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Global;
-(function (Global) {
-    Global[Global["unit"] = 40] = "unit";
-})(Global = exports.Global || (exports.Global = {}));
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const global_1 = __webpack_require__(4);
-const Tile_1 = __webpack_require__(2);
-const Container_1 = __webpack_require__(6);
-class Line extends Container_1.Container {
-    constructor() {
-        super();
-        this.x = 0;
-        this.y = 0;
-        this.height = 1;
-        this.parent = null;
-        this.children = new Set;
-        this.tiles = [];
-        const tile = new Tile_1.Tile;
-        this.grow();
-    }
-    get width() {
-        return this.children.size * global_1.Global.unit;
-    }
-    grow() {
-        const tile = new Tile_1.Tile;
-        tile.moveTo({
-            x: this.x + this.width,
-            y: this.y
-        });
-        this.children.add(tile);
-        this.tiles.push(tile);
-    }
-    shrink() {
-        this.children.delete(this.tiles.pop());
-    }
-    beforeDraw(ctx) {
-        ctx.save();
-    }
-    draw(ctx) {
-        this.beforeDraw(ctx);
-        this.children.forEach(item => item.draw(ctx));
-        this.afterDraw(ctx);
-    }
-    afterDraw(ctx) {
-        ctx.restore();
-    }
-    move(pos) { }
-    moveX(distance) { }
-    moveY(distance) { }
-    moveTo(pos) { }
-}
-exports.Line = Line;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class Container {
-    constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.parent = null;
-        this.children = new Set;
-    }
-    beforeDraw(ctx) {
-        ctx.save();
-    }
-    draw(ctx) {
-        this.beforeDraw(ctx);
-        this.children.forEach(child => child.draw(ctx));
-        this.afterDraw(ctx);
-    }
-    afterDraw(ctx) {
-        ctx.restore();
-    }
-    add(child) {
-        this.children.add(child);
-    }
-    remove(child) {
-        this.children.delete(child);
-    }
-    move(pos) { }
-    moveX(distance) { }
-    moveY(distance) { }
-    moveTo(pos) { }
-}
-exports.Container = Container;
 
 
 /***/ })
