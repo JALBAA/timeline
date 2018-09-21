@@ -1,8 +1,8 @@
 module.exports = {
     entry: './src/index.ts',
     output: {
-        path: __dirname + '/dist',
-        filename: 'build.js',
+        path: __dirname + '/',
+        filename: 'index.js',
     },  
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
