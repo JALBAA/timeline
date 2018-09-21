@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -215,6 +215,8 @@ class Tile extends Container_1.Container {
     }
     moveTo(pos) {
         const { x, y } = pos;
+        this.x = x;
+        this.y = y;
         const width = this.width;
         const height = this.height;
         this.points[0].x = x;
@@ -229,11 +231,11 @@ class Tile extends Container_1.Container {
     draw(ctx) {
         this.beforeDraw(ctx);
         ctx.beginPath();
-        ctx.moveTo(this.x + this.points[0].x, this.y + this.points[0].y);
-        ctx.lineTo(this.x + this.points[1].x, this.y + this.points[1].y);
-        ctx.lineTo(this.x + this.points[2].x, this.y + this.points[2].y);
-        ctx.lineTo(this.x + this.points[3].x, this.y + this.points[3].y);
-        ctx.lineTo(this.x + this.points[0].x, this.y + this.points[0].y);
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        ctx.lineTo(this.points[1].x, this.points[1].y);
+        ctx.lineTo(this.points[2].x, this.points[2].y);
+        ctx.lineTo(this.points[3].x, this.points[3].y);
+        ctx.lineTo(this.points[0].x, this.points[0].y);
         ctx.stroke();
         this.afterDraw(ctx);
     }
@@ -263,10 +265,65 @@ var Global;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+class AbsMatrix {
+    mutiply(m2) {
+        const m1 = this;
+        const rowNumber = m1.data.length;
+        const columnNumber = m2.data[0].length;
+        const result = [];
+        for (let i = 0; i < rowNumber; i++) {
+            for (let j = 0; j < columnNumber; j++) {
+                if (j == 0)
+                    result.push([0]);
+                result[i][j] = m1.data[i].reduce((foo, rowItem, rowIdx) => {
+                    // i行 * j列
+                    const columnItem = m2.data[rowIdx][j];
+                    foo += rowItem * columnItem;
+                    return foo;
+                }, 0);
+            }
+        }
+        this.data = result;
+    }
+    toObject() {
+    }
+    toString() {
+        function space(num) {
+            let r = '';
+            for (let i = 0; i < num; i++) {
+                r += ' ';
+            }
+            return r;
+        }
+        let result = '';
+        for (let i = 0; i < this.data.length; i++) {
+            result += `row${i + 1}: `;
+            for (let j = 0; j < this.data[i].length; j++) {
+                const num = `${this.data[i][j].toFixed(2)}`;
+                result += num;
+                result += space(10 - num.length);
+            }
+            result += '\n';
+        }
+        return result;
+    }
+}
+exports.AbsMatrix = AbsMatrix;
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 const Point_1 = __webpack_require__(1);
 const Tile_1 = __webpack_require__(2);
-const Line_1 = __webpack_require__(5);
-const Stage_1 = __webpack_require__(6);
+const Line_1 = __webpack_require__(6);
+const Stage_1 = __webpack_require__(7);
+const matrix_1 = __webpack_require__(8);
+const vector_1 = __webpack_require__(9);
 const stage = new Stage_1.Stage({
     width: 1000,
     height: 700,
@@ -289,6 +346,22 @@ line.grow();
 line.grow();
 line.grow();
 line.grow();
+let m1 = new matrix_1.Matrix33;
+m1.data[2][0] = 10;
+m1.data[2][1] = 20;
+m1.data[0][0] = 10;
+m1.data[1][1] = 10;
+console.log(m1.toString());
+let v = new vector_1.Vector;
+console.log(v.toString());
+v.mutiply(m1);
+console.log(v.toString());
+let world = new matrix_1.Matrix33;
+// let 1 = obj
+// let 2 = obj
+// 1.worldmatrix = world
+// 2.worldmatrix = world
+// 1.add(2)
 stage.onRenderFrame(() => {
     angle += 10;
     const radian = Math.PI / 180 * angle;
@@ -301,7 +374,7 @@ stage.onRenderFrame(() => {
     //     }
     //     line.grow()
     // }
-    line.moveX(1);
+    line.moveX(10);
     // if (direction == 0) {
     //     i--
     //     if (i == 0) {
@@ -321,7 +394,7 @@ stage.onRenderFrame(() => {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -384,7 +457,7 @@ exports.Line = Line;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -455,6 +528,66 @@ class Stage {
     }
 }
 exports.Stage = Stage;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Matrix_1 = __webpack_require__(4);
+class Matrix33 extends Matrix_1.AbsMatrix {
+    constructor() {
+        super(...arguments);
+        this.data = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+    }
+}
+exports.Matrix33 = Matrix33;
+class Matrix32 extends Matrix_1.AbsMatrix {
+    constructor() {
+        super(...arguments);
+        this.data = [
+            [1, 0, 0],
+            [0, 1, 0]
+        ];
+    }
+}
+exports.Matrix32 = Matrix32;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Matrix_1 = __webpack_require__(4);
+class Vector extends Matrix_1.AbsMatrix {
+    constructor() {
+        super(...arguments);
+        this.data = [[0, 0, 1]];
+    }
+    get x() {
+        return this.data[0][0];
+    }
+    set x(v) {
+        this.data[0][0] = v;
+    }
+    get y() {
+        return this.data[0][1];
+    }
+    set y(v) {
+        this.data[0][1] = v;
+    }
+}
+exports.Vector = Vector;
 
 
 /***/ })

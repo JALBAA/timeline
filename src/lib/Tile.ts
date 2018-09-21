@@ -61,6 +61,8 @@ export class Tile extends Container {
     }
     moveTo (pos: {x: number , y: number}) {
         const {x, y} = pos
+        this.x = x
+        this.y = y
         const width = this.width
         const height = this.height
         this.points[0].x = x
@@ -75,15 +77,15 @@ export class Tile extends Container {
     draw (ctx: CanvasRenderingContext2D) {
         this.beforeDraw(ctx)
         ctx.beginPath()
-        ctx.moveTo(this.x + this.points[0].x, this.y + this.points[0].y)
-        ctx.lineTo(this.x + this.points[1].x, this.y + this.points[1].y)
-        ctx.lineTo(this.x + this.points[2].x, this.y + this.points[2].y)
-        ctx.lineTo(this.x + this.points[3].x, this.y + this.points[3].y)
-        ctx.lineTo(this.x + this.points[0].x, this.y + this.points[0].y)
+        ctx.moveTo(this.points[0].x, this.points[0].y)
+        ctx.lineTo(this.points[1].x, this.points[1].y)
+        ctx.lineTo(this.points[2].x, this.points[2].y)
+        ctx.lineTo(this.points[3].x, this.points[3].y)
+        ctx.lineTo(this.points[0].x, this.points[0].y)
         ctx.stroke()
         this.afterDraw(ctx)
     }
     transform () : void {
-        
+
     }
 }

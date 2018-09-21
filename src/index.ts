@@ -3,6 +3,9 @@ import {Tile} from './lib/Tile'
 import {Line} from './lib/Line'
 
 import {Stage} from './lib/Stage'
+import { Matrix33, Matrix32 } from './lib/utils/matrix';
+import { Vector } from './lib/utils/vector';
+
 
 const stage = new Stage({
     width: 1000,
@@ -32,6 +35,25 @@ line.grow()
 line.grow()
 line.grow()
 line.grow()
+
+let m1 = new Matrix33
+m1.data[2][0] = 10
+m1.data[2][1] = 20
+m1.data[0][0] = 10
+m1.data[1][1] = 10
+console.log(m1.toString())
+let v =  new Vector
+console.log(v.toString())
+v.mutiply(m1)
+console.log(v.toString())
+
+let world = new Matrix33
+// let 1 = obj
+// let 2 = obj
+// 1.worldmatrix = world
+// 2.worldmatrix = world
+// 1.add(2)
+
 stage.onRenderFrame(() => {
     angle += 10
     const radian = Math.PI / 180 * angle
@@ -44,7 +66,7 @@ stage.onRenderFrame(() => {
     //     }
     //     line.grow()
     // }
-    line.moveX(1)
+    line.moveX(10)
     // if (direction == 0) {
     //     i--
     //     if (i == 0) {
