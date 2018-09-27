@@ -47,7 +47,7 @@ export class Handle extends RenderableObject {
     }
     constructor () {
         super()
-        this.height = new Grid(0.25)
+        this.height = new Grid(.25)
     }
     _draw () {
         this.node.setAttribute('cx', this.coord.x.toString())
@@ -84,10 +84,14 @@ export default class Line extends Container {
     constructor () {
         super()
         this.addChild(this.path)
+        this.path.translate({
+            x: this.path.coord.x,
+            y: this.path.height.div(new Grid(2)),
+        })
         this.addChild(this.leftHandle)
         this.leftHandle.translate({
             x: this.leftHandle.width,
-            y: this.coord.y
+            y: this.height.div(new Grid(2)),
         })
         this.addChild(this.rightHandle)
     }
@@ -97,7 +101,7 @@ export default class Line extends Container {
             this._width = l
             this.rightHandle.translate({
                 x: l.sub(this.rightHandle.width),
-                y: coord.y,
+                y: this.height.div(new Grid(2)),
             })
             this.path.width = l
         }

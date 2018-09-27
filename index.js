@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -70,60 +70,7 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unit = 25;
-class Grid {
-    constructor(n) {
-        this._value = 0;
-        if (n instanceof Grid) {
-            this._value = n.valueOf();
-        }
-        else {
-            this._value = n * exports.unit;
-        }
-    }
-    get value() {
-        return this._value;
-    }
-    add(g) {
-        return new Grid((this._value + g.value) / exports.unit);
-    }
-    sub(g) {
-        return new Grid((this._value - g.value) / exports.unit);
-    }
-    mul(g) {
-        if (g instanceof Number) {
-            return new Grid(this._value * g);
-        }
-        else {
-            return new Grid((this._value / exports.unit) * (g.value / exports.unit));
-        }
-    }
-    div(g) {
-        if (g instanceof Number) {
-            return new Grid(this._value / g);
-        }
-        else {
-            return new Grid((this._value / exports.unit) / (g.value / exports.unit));
-        }
-    }
-    valueOf() {
-        return this.value;
-    }
-    toString() {
-        return this.value.toString();
-    }
-}
-exports.default = Grid;
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const grid_1 = __webpack_require__(0);
+const grid_1 = __webpack_require__(1);
 exports.UNIT = 10;
 let cid = 0;
 class RenderableObject {
@@ -221,18 +168,93 @@ exports.default = RenderableObject;
 
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.unit = 25;
+class Grid {
+    constructor(n) {
+        this._value = 0;
+        if (n instanceof Grid) {
+            this._value = n.valueOf();
+        }
+        else {
+            this._value = n * exports.unit;
+        }
+    }
+    get value() {
+        return this._value;
+    }
+    add(g) {
+        return new Grid((this._value + g.value) / exports.unit);
+    }
+    sub(g) {
+        return new Grid((this._value - g.value) / exports.unit);
+    }
+    mul(g) {
+        if (g instanceof Number) {
+            return new Grid(this._value * g);
+        }
+        else {
+            return new Grid((this._value / exports.unit) * (g.value / exports.unit));
+        }
+    }
+    div(g) {
+        if (g instanceof Number) {
+            return new Grid(this._value / g);
+        }
+        else {
+            return new Grid((this._value / exports.unit) / (g.value / exports.unit));
+        }
+    }
+    valueOf() {
+        return this.value;
+    }
+    toString() {
+        return this.value.toString();
+    }
+}
+exports.default = Grid;
+
+
+/***/ }),
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const Line_1 = __webpack_require__(3);
-const Stage_1 = __webpack_require__(4);
-const grid_1 = __webpack_require__(0);
-const Railway_1 = __webpack_require__(5);
-const Debug_1 = __webpack_require__(6);
-const Time_1 = __webpack_require__(7);
+const RenderableObject_1 = __webpack_require__(0);
+const Global_1 = __webpack_require__(5);
+class Container extends RenderableObject_1.default {
+    constructor() {
+        super(...arguments);
+        this.node = document.createElementNS(Global_1.SVGNS, 'g');
+    }
+    _draw() {
+        this.node.setAttribute('transform', `translate(${this.coord.x}, ${this.coord.y})`);
+    }
+}
+exports.default = Container;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Line_1 = __webpack_require__(4);
+const Stage_1 = __webpack_require__(6);
+const grid_1 = __webpack_require__(1);
+const Railway_1 = __webpack_require__(7);
+const Debug_1 = __webpack_require__(8);
+const Time_1 = __webpack_require__(9);
+const RenderableJob_1 = __webpack_require__(10);
 const l = new Line_1.default;
 const l2 = new Line_1.default;
 const debugGrid = new Debug_1.DebugGrid;
@@ -241,41 +263,42 @@ if (body) {
     const stage = new Stage_1.default(body, 500, 500);
     stage.addChild(debugGrid);
     const railway = new Railway_1.default;
-    const r2 = new Railway_1.default;
-    const l3 = new Line_1.default;
-    r2.addChild(l3);
-    r2.translate({
-        x: new grid_1.default(0),
-        y: new grid_1.default(2),
-    });
-    l3.width = new grid_1.default(5);
-    r2.height = new grid_1.default(2);
-    stage.addChild(r2);
-    // svg.appendChild(l.node)
-    // svg.appendChild(l2.node)
+    const job = new RenderableJob_1.default('t', 'i');
+    // const r2 = new Railway
+    // const l3 = new Line
+    // r2.addChild(l3)
+    // r2.translate({
+    //     x: new Grid(0),
+    //     y: new Grid(2),
+    // })
+    // l3.width = new Grid(5)
+    // r2.height = new Grid(2)
+    // stage.addChild(r2)
+    // // svg.appendChild(l.node)
+    // // svg.appendChild(l2.node)
     railway.addChild(l);
-    railway.addChild(l2);
-    railway.height = new grid_1.default(2);
-    railway.translate({
-        y: new grid_1.default(1),
-        x: new grid_1.default(0),
-    });
+    // railway.addChild(l2)
+    // railway.height = new Grid(2)
+    // railway.translate({
+    //     y: new Grid(1),
+    //     x: new Grid(0),
+    // })
     stage.addChild(railway);
-    // stage.addChild(l)
-    // stage.addChild(l2)
-    l.translate({ x: new grid_1.default(1), y: new grid_1.default(.5) });
-    l.width = new grid_1.default(2);
-    l2.translate({ x: new grid_1.default(4), y: new grid_1.default(.5) });
-    l2.width = new grid_1.default(3);
-    stage.draw();
-    setTimeout(() => {
-        // const coord = l.coord
-        // l.translate({x: l.coord.x.add(new Grid(1)), y: l.coord.y})
-        // l.width = l.width.add(new Grid(1))
-        // l.draw()
-        l2.width = l2.width.add(new grid_1.default(1));
-        stage.draw();
-    }, 1600);
+    // // stage.addChild(l)
+    // // stage.addChild(l2)
+    railway.translate({ x: new grid_1.default(0), y: new grid_1.default(2) });
+    l.width = new grid_1.default(5);
+    // l2.translate({x: new Grid(4), y: new Grid(.5)})
+    // l2.width = new Grid(3)
+    // stage.draw()
+    // setTimeout (() => {
+    //     // const coord = l.coord
+    //     // l.translate({x: l.coord.x.add(new Grid(1)), y: l.coord.y})
+    //     // l.width = l.width.add(new Grid(1))
+    //     // l.draw()
+    //     l2.width = l2.width.add(new Grid(1))
+    //     stage.draw()
+    // }, 1600)
     const t = new Time_1.Time;
     console.log(t);
     t.view.translate({
@@ -286,11 +309,12 @@ if (body) {
     stage.addChild(t.view);
     console.log(t.view);
     stage.draw();
-    // setInterval (() => {
-    //     t.travelForward()
-    //     // console.log(t.end)
-    //     stage.draw()
-    // }, 1000)
+    setInterval(() => {
+        // t.travelForward()
+        // l.translate({x: l.coord.x.add(new Grid(1)), y: l.coord.y})
+        // console.log(t.end)
+        stage.draw();
+    }, 1000);
     const forward = document.querySelector('#forward');
     if (forward) {
         forward.addEventListener('click', e => {
@@ -315,16 +339,16 @@ var g2 = new grid_1.default(1);
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 // import Handle from "./Handle";
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-const Container_1 = __webpack_require__(8);
+const RenderableObject_1 = __webpack_require__(0);
+const grid_1 = __webpack_require__(1);
+const Container_1 = __webpack_require__(2);
 // import { Coord } from "../interface/ICoordinate";
 // export default class Line extends Coordinate implements Drawable, Dragable {
 //     start: Handle = new Handle
@@ -354,7 +378,7 @@ class Handle extends RenderableObject_1.default {
     constructor() {
         super();
         this.node = document.createElementNS(ns, 'circle');
-        this.height = new grid_1.default(0.25);
+        this.height = new grid_1.default(.25);
     }
     get width() {
         return this.height;
@@ -398,10 +422,14 @@ class Line extends Container_1.default {
         this.path = new Path;
         this._width = new grid_1.default(1);
         this.addChild(this.path);
+        this.path.translate({
+            x: this.path.coord.x,
+            y: this.path.height.div(new grid_1.default(2)),
+        });
         this.addChild(this.leftHandle);
         this.leftHandle.translate({
             x: this.leftHandle.width,
-            y: this.coord.y
+            y: this.height.div(new grid_1.default(2)),
         });
         this.addChild(this.rightHandle);
     }
@@ -414,7 +442,7 @@ class Line extends Container_1.default {
             this._width = l;
             this.rightHandle.translate({
                 x: l.sub(this.rightHandle.width),
-                y: coord.y,
+                y: this.height.div(new grid_1.default(2)),
             });
             this.path.width = l;
         }
@@ -428,13 +456,23 @@ exports.default = Line;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
+exports.SVGNS = 'http://www.w3.org/2000/svg';
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const RenderableObject_1 = __webpack_require__(0);
 // import Coordinate from "./graphics/Coordinate";
 // import Drawable from "./interface/Drawable";
 // import Rail from "./graphics/Rail";
@@ -480,23 +518,23 @@ exports.default = Stage;
 
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-const Container_1 = __webpack_require__(8);
+const RenderableObject_1 = __webpack_require__(0);
+const grid_1 = __webpack_require__(1);
+const Container_1 = __webpack_require__(2);
 const ns = 'http://www.w3.org/2000/svg';
 class RailwayEntity extends RenderableObject_1.default {
     constructor() {
         super(...arguments);
-        this.height = new grid_1.default(.5);
+        this.height = new grid_1.default(1);
         this.coord = {
             x: new grid_1.default(0),
-            y: new grid_1.default(.25),
+            y: new grid_1.default(0),
         };
         this.node = document.createElementNS(ns, 'rect');
     }
@@ -533,14 +571,14 @@ exports.default = Railway;
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
+const RenderableObject_1 = __webpack_require__(0);
+const grid_1 = __webpack_require__(1);
 class Tile extends RenderableObject_1.default {
     constructor() {
         super(...arguments);
@@ -599,15 +637,15 @@ exports.DebugGrid = DebugGrid;
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-const Container_1 = __webpack_require__(8);
+const RenderableObject_1 = __webpack_require__(0);
+const grid_1 = __webpack_require__(1);
+const Container_1 = __webpack_require__(2);
 const ns = 'http://www.w3.org/2000/svg';
 // class Timeline extends RenderableObject{
 //     addChild (child: Day) {
@@ -795,34 +833,126 @@ exports.Time = Time;
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const Global_1 = __webpack_require__(9);
-class Container extends RenderableObject_1.default {
+const Job_1 = __webpack_require__(11);
+const Line_1 = __webpack_require__(4);
+class RenderableJob {
     constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(Global_1.SVGNS, 'g');
-    }
-    _draw() {
-        this.node.setAttribute('transform', `translate(${this.coord.x}, ${this.coord.y})`);
+        this.job = new Job_1.default('', '');
+        this.view = null;
     }
 }
-exports.default = Container;
+class LineJob extends RenderableJob {
+    constructor(title, info) {
+        super();
+        this.view = new Line_1.default;
+        this.job.title = title;
+        this.job.info = info;
+    }
+    addParent(parent) {
+        this.view.addParent(parent);
+    }
+    removeParent() {
+        this.view.removeParent();
+    }
+    addChild(child) {
+        this.view.addChild(child);
+    }
+    removeChild(target) {
+        this.view.removeChild(target);
+    }
+    removeAll() {
+        this.view.removeAll();
+    }
+    getWorldPos() {
+        return this.view.getWorldPos();
+    }
+    translate(coord) {
+        this.view.translate(coord);
+    }
+    draw() {
+        this.view.draw();
+    }
+}
+exports.default = LineJob;
+class IconJob {
+}
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SVGNS = 'http://www.w3.org/2000/svg';
+var JobStatus;
+(function (JobStatus) {
+    JobStatus[JobStatus["None"] = 0] = "None";
+    JobStatus[JobStatus["Done"] = 1] = "Done";
+    JobStatus[JobStatus["Doing"] = 2] = "Doing";
+    JobStatus[JobStatus["Pending"] = 3] = "Pending";
+    JobStatus[JobStatus["Pause"] = 4] = "Pause";
+    JobStatus[JobStatus["Timeout"] = 5] = "Timeout";
+})(JobStatus = exports.JobStatus || (exports.JobStatus = {}));
+var JobType;
+(function (JobType) {
+    JobType[JobType["None"] = 0] = "None";
+    JobType[JobType["Default"] = 1] = "Default";
+})(JobType = exports.JobType || (exports.JobType = {}));
+// import Position from '../docorators/Position'
+// @Position({
+//     x: 0,
+//     y: 0
+// })
+class Schedule {
+    constructor() {
+        this.developStart = new Date;
+        this.developEnd = new Date;
+        this.testStart = new Date;
+        this.testEnd = new Date;
+        this.release = new Date;
+        this.integrationStart = new Date;
+        this.integrationEnd = new Date;
+        this.finished = new Date;
+    }
+}
+exports.Schedule = Schedule;
+class Job {
+    constructor(title, info) {
+        this.status = JobStatus.None;
+        this.schedule = new Schedule;
+        this.type = JobType.Default;
+        this.title = '';
+        this.info = '';
+        this.initSchedule();
+    }
+    initSchedule() {
+        function dateAdd1Day(date) {
+            return new Date(date.getTime() + 1000 * 60 * 60 * 24);
+        }
+        this.schedule.developStart = new Date();
+        this.schedule.developEnd = dateAdd1Day(this.schedule.developStart);
+        this.schedule.testStart = dateAdd1Day(this.schedule.developEnd);
+        this.schedule.testEnd = dateAdd1Day(this.schedule.testStart);
+        this.schedule.release = dateAdd1Day(this.schedule.testEnd);
+        this.schedule.integrationStart = dateAdd1Day(this.schedule.release);
+        this.schedule.integrationEnd = dateAdd1Day(this.schedule.integrationStart);
+        this.schedule.finished = dateAdd1Day(this.schedule.integrationEnd);
+    }
+    // owner: Owner | null = null
+    // partener: Partener[] | null = null
+    addOwner(owner) {
+    }
+    addPartener(partener) {
+    }
+}
+exports.default = Job;
 
 
 /***/ })

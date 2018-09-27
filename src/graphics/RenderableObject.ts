@@ -6,7 +6,17 @@ export type Coord = {
 }
 export const UNIT: number = 10
 let cid: number = 0
-export default abstract class RenderableObject {
+export interface IRenderableObject {
+    addParent (parent: RenderableObject): void
+    removeParent (): void
+    addChild (child: RenderableObject): void
+    removeChild (target: RenderableObject): void
+    removeAll (): void
+    getWorldPos (): Coord 
+    translate (coord: Coord): void
+    draw (): void
+}
+export default abstract class RenderableObject implements IRenderableObject{
     coord = {
         x: new Grid(0),
         y: new Grid(0),

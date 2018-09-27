@@ -7,10 +7,10 @@ import Container from "./Container";
 const ns = 'http://www.w3.org/2000/svg'
 
 class RailwayEntity extends RenderableObject {
-    height = new Grid(.5)
+    height = new Grid(1)
     coord = {
         x: new Grid(0),
-        y: new Grid(.25),
+        y: new Grid(0),
     }
     node = document.createElementNS(ns, 'rect')
     _draw ({x, y}: Coord) {
