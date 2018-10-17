@@ -6,17 +6,25 @@ export type Coord = {
 }
 export const UNIT: number = 10
 let cid: number = 0
-export interface IRenderableObject {
-    addParent (parent: RenderableObject): void
+export interface Renderable {
+    coord: Coord,
+    height: Grid,
+    width: Grid,
+    node: SVGElement | null,
+    parent: Renderable | null,
+    cid: number,
+    addParent (parent: Renderable): void
     removeParent (): void
-    addChild (child: RenderableObject): void
-    removeChild (target: RenderableObject): void
+    addChild (child: Renderable): void
+    removeChild (target: Renderable): void
     removeAll (): void
-    getWorldPos (): Coord 
+    getWorldPos (): Coord
     translate (coord: Coord): void
     draw (): void
+    beforeDraw () : void 
+    afterDraw () : void
 }
-export default abstract class RenderableObject implements IRenderableObject{
+export default abstract class RenderableObject implements Renderable {
     coord = {
         x: new Grid(0),
         y: new Grid(0),
@@ -24,8 +32,8 @@ export default abstract class RenderableObject implements IRenderableObject{
     height = new Grid(1)
     width = new Grid(1)
     node: SVGElement | null = null
-    protected _parent: RenderableObject | null = null
-    protected _children: RenderableObject[] = []
+    protected _parent: Renderable | null = null
+    protected _children: Renderable[] = []
     get parent () {
         return this._parent
     }
@@ -39,20 +47,20 @@ export default abstract class RenderableObject implements IRenderableObject{
     constructor () {
         this._cid = ++cid
     }
-    addParent (parent: RenderableObject) {
+    addParent (parent: Renderable) {
         this._parent = parent
     }
     removeParent () {
         this._parent = null
     }
-    addChild (child: RenderableObject) {
+    addChild (child: Renderable) {
         this._children.push(child)
-        child.addParent(this)
+        child.addParent(this as Renderable)
         if (this.node && child.node) {
             this.node.appendChild(child.node)
         }
     }
-    removeChild (target: RenderableObject) {
+    removeChild (target: Renderable) {
         this._children = this._children.filter(child => {
             const r = child.cid != target.cid
             if (r && this.node && target.node) {
@@ -71,7 +79,7 @@ export default abstract class RenderableObject implements IRenderableObject{
             return false
         })
     }
-    protected _transform (parent: RenderableObject, coord: Coord): Coord {
+    protected _transform (parent: Renderable, coord: Coord): Coord {
         const x = parent.coord.x.add(coord.x)
         const y = parent.coord.y.add(coord.y)
         if (parent.parent !== null) {
@@ -101,9 +109,19 @@ export default abstract class RenderableObject implements IRenderableObject{
     protected _draw (coord: Coord) {
 
     }
+    onDraw () {
+
+    }
     draw () {
-        const coord = this.getWorldPos()
-        this._draw(coord)
+        this.beforeDraw()
+        // const coord = this.getWorldPos()
+        this.onDraw()
         this.children.forEach(child => child.draw())
+        this.afterDraw()
+    }
+    beforeDraw () {
+    }
+    afterDraw () {
+
     }
 }

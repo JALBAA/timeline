@@ -1,12 +1,12 @@
 import RenderableObject from "../graphics/RenderableObject";
 import Grid from "../grid";
 
-class Tile extends RenderableObject{
+class Tile extends RenderableObject {
     node: SVGRectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
     height = new Grid(1)
     width = new Grid(1)
     blackOrWhite = 'black'
-    _draw () {
+    onDraw () {
         this.node.setAttribute('width', this.height.value.toString())
         this.node.setAttribute('height', this.width.value.toString())
         this.node.setAttribute('x', (this.coord.x.value/* - this.height.value/2*/).toString())
@@ -18,9 +18,9 @@ class Tile extends RenderableObject{
     }
 }
 
-export class DebugGrid extends RenderableObject{
+export class DebugGrid extends RenderableObject {
     node: SVGGElement = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-    _draw () {
+    onDraw () {
         // this.node.setAttribute('style', 'stroke-width: 1;stroke: gray;fill: rgba(0,0,0,0.4);')
     }
     constructor () {

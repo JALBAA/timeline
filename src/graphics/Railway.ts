@@ -13,7 +13,7 @@ class RailwayEntity extends RenderableObject {
         y: new Grid(0),
     }
     node = document.createElementNS(ns, 'rect')
-    _draw ({x, y}: Coord) {
+    onDraw () {
         if (this.parent) {
             this.node.setAttribute('height', this.height.toString())
             this.node.setAttribute('width',   (this.parent.width).mul(new Grid(50)).value.toString())
@@ -35,9 +35,9 @@ export default class Railway extends Container {
         super()
         this.addChild(this.railway)
     }
-    _draw () {
-        super._draw()
+    onDraw () {
         this._detectCollision()
+        super.onDraw()
     }
     private _detectCollision () {
         // 

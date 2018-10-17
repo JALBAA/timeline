@@ -2,6 +2,8 @@ import RenderableObject, { Coord } from "./graphics/RenderableObject";
 import Grid from "./grid";
 import Container from "./graphics/Container";
 const ns = 'http://www.w3.org/2000/svg'
+import Options, {has, hasAll} from './utils/Options'
+import SuperDate from "./SuperDate";
 
 // class Timeline extends RenderableObject{
 //     addChild (child: Day) {
@@ -29,7 +31,7 @@ class DayTileBG extends RenderableObject {
             this.oddOrEven = 'odd'
         }
     }
-    _draw () {
+    onDraw () {
         const newY = (this.coord.y.sub(this.height))
         if (this.oddOrEven == 'even') {
             this.node.setAttribute('style', 'stroke-width: .5;stroke: gray;fill: rgba(255,255,255,1);')
@@ -44,7 +46,7 @@ class DayTileBG extends RenderableObject {
 }
 class DayText extends RenderableObject {
     node: SVGTextElement = document.createElementNS(ns, 'text')
-    _draw () {
+    onDraw () {
         const newY = this.coord.y.sub(new Grid(.3))
         const newX = this.coord.x.add(new Grid(.2))
         this.node.setAttribute('font-size', '12px')
@@ -67,8 +69,7 @@ class DayTile extends Container {
             this.day = day
         }
     }
-    _draw () {
-        super._draw()
+    afterDraw () {
         // this.node.setAttribute('font-size', '12px')
         // this.node.setAttribute('x', this.coord.x.value.toString())
         // this.node.setAttribute('y', this.coord.y.value.toString())
@@ -109,23 +110,23 @@ export class TimeRuler extends Container {
 
 export class Day  {
     // node: SVGTextElement = document.createElementNS(ns, 'text')
-    date = new Date
-    constructor (d: Day | Date | null) {
+    date = new SuperDate
+    constructor (d: Day | SuperDate | null) {
         if (d) {
-            this.date = new Date(d.getTime())
+            this.date = new SuperDate(d.getTime())
         }
     }
     addDayByNumber (d: number): Day {
-        return new Day(new Date(this.date.getTime() + d * 1000 * 60 * 60 * 24))
+        return new Day(new SuperDate(this.date.getTime() + d * 1000 * 60 * 60 * 24))
     }
     subDayByNumber (d: number): Day {
-        return new Day(new Date(this.date.getTime() - d * 1000 * 60 * 60 * 24))
+        return new Day(new SuperDate(this.date.getTime() - d * 1000 * 60 * 60 * 24))
     }
     forward () {
-        this.date = new Date(this.date.getTime() + 1000 * 60 * 60 * 24)
+        this.date = new SuperDate(this.date.getTime() + 1000 * 60 * 60 * 24)
     }
     backward () {
-        this.date = new Date(this.date.getTime() - 1000 * 60 * 60 * 24)
+        this.date = new SuperDate(this.date.getTime() - 1000 * 60 * 60 * 24)
     }
     getTime () {
         return this.date.getTime()
@@ -137,14 +138,16 @@ export class Time {
     view: TimeRuler = new TimeRuler
     end: Day | null = null
     start: Day | null = null
-    pivot: Day = new Day(new Date)
+    // pivot就是屏幕左边原点
+    // 显示30天，前15，后15
+    pivot: Day = new Day(new SuperDate)
     pivotPos = 5
     dayLength = 30
-    constructor (d: Day | Date | null = null) {
+    constructor (d: Day | SuperDate | null = null) {
         if (d) {
             if (d instanceof Day) {
                 this.pivot = d
-            } else if (d instanceof Date) {
+            } else if (d instanceof SuperDate) {
                 this.pivot = new Day(d)
             }
         }
@@ -154,7 +157,7 @@ export class Time {
     }
     updateDays () {
         if (this.end && this.start) {
-            let pointer = new Day(new Date(this.end.date.getTime() ))
+            let pointer = new Day(new SuperDate(this.end.date.getTime() ))
             this.days = []
             while (pointer.getTime() < this.start.getTime()) {
                 this.days.push(new Day(pointer))
@@ -181,4 +184,96 @@ export class Time {
         // if (this.start)
         //     this.days.unshift(this.start)
     }
+}
+
+export interface Dateable {
+    // days: Day[]
+    // end: Day
+    // start: Day
+    // // pivot就是屏幕左边原点
+    // // 显示30天，前15，后15
+    // pivot: Day
+    // pivotPos: number
+    // dayLength: number
+    updateDays (): void
+    travelForward(): void
+    travelBackward(): void
+}
+
+class Coordinate  {
+    
+}
+
+export class Timer implements  Dateable{
+    updateDays () {
+
+    }
+    travelForward () {
+
+    }
+    travelBackward () {
+
+    }
+}
+
+interface Coordinateable {
+
+}
+
+class WordCoordinate {}
+
+
+interface EventEmitable<T> {
+    cbList: Array<(arg: T) => void>
+    notify (evt: string, arg: T) : void
+    on (evt: string, cb: (arg: T) => void) : void
+}
+
+export class TimeCoordCommander<T> implements Dateable, EventEmitable<T> {
+    cbList: Array<(arg: T) => void> = []
+    timer: Timer | null
+    coord: Coordinate | null
+    constructor (timer: Timer, coord: Coordinate) {
+        this.timer = timer
+        this.coord = coord
+    }
+    updateDays () {
+        if (this.timer && this.coord) {
+
+        }
+    }
+    travelForward () {
+        
+    }
+    travelBackward () {
+        
+    }
+    notify (evt: string, arg: T) {
+
+    }
+    on (evt: string, cb: (arg: T) => void) {
+
+    }
+}
+
+
+export abstract class DateToCoord {
+    static globalTime: Time | null = null
+    static fromDateToCoord (date: SuperDate) : number {
+        if (this.globalTime) {
+            const pivotDate = this.globalTime.pivot.date
+            if (pivotDate.isAfter(date)) {
+                return -1 * pivotDate.daysBetween2Date(date)
+            } else {
+                return pivotDate.daysBetween2Date(date)
+            }
+        } else {
+            throw new Error('no globalTime')
+        }
+    }
+}
+
+
+export class TimeLine extends Container {
+
 }

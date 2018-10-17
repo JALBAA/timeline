@@ -3,9 +3,11 @@ import Stage from "./Stage";
 import Grid from "./grid";
 import Railway from "./graphics/Railway";
 import { DebugGrid } from "./utils/Debug";
-import { Time, Day } from "./Time";
-import LineJob from "./jobs/RenderableJob";
-const l = new Line
+import { Time, Day, DateToCoord} from "./Time";
+import {LineJob, LabourIcon} from "./jobs/RenderableJob";
+
+
+// const l = new Line
 const l2 = new Line
 const debugGrid = new DebugGrid
 const body = document.querySelector('body')
@@ -13,7 +15,15 @@ if (body) {
     const stage = new Stage(body, 500, 500)
     stage.addChild(debugGrid)
     const railway = new Railway
-    const job = new LineJob('t', 'i')
+    const l = new LineJob()
+    const labour = new LabourIcon()
+    const partener1 = new LabourIcon()
+    const partener2 = new LabourIcon()
+    const partener3 = new LabourIcon()
+    l.addOwner(labour)
+    l.addPartener(partener1)
+    l.addPartener(partener2)
+    l.addPartener(partener3)
     // const r2 = new Railway
     // const l3 = new Line
     // r2.addChild(l3)
@@ -37,7 +47,38 @@ if (body) {
     // // stage.addChild(l)
     // // stage.addChild(l2)
     railway.translate({x: new Grid(0), y: new Grid(2)})
-    l.width = new Grid(5)
+    // l.width = new Grid(5)
+    l.devEnd.addDays(10)
+    l.devStart.addDays(1)
+
+    console.log(l)
+
+    
+    document.addEventListener('keyup', (e) => {
+        if (e.keyCode == 40) {
+            railway.translate({
+                y: railway.coord.y.add(new Grid(1)),
+                x: railway.coord.x,
+            })
+        } else if (e.keyCode == 38) {
+            railway.translate({
+                y: railway.coord.y.sub(new Grid(1)),
+                x: railway.coord.x,
+            })
+        }
+        if (e.keyCode == 37) {
+            l.translate({
+                x: l.coord.x.sub(new Grid(1)),
+                y: l.coord.y
+            })
+        } else if (e.keyCode == 39) {
+            l.translate({
+                x: l.coord.x.add(new Grid(1)),
+                y: l.coord.y
+            })
+        }
+        stage.draw()
+    })
     // l2.translate({x: new Grid(4), y: new Grid(.5)})
     // l2.width = new Grid(3)
     // stage.draw()
@@ -51,19 +92,19 @@ if (body) {
     // }, 1600)
 
     const t = new Time
-    console.log(t)
     t.view.translate({
         x: t.view.coord.x,
         y: new Grid(1),
     })
+    DateToCoord.globalTime = t
     // t.travelForward()
     stage.addChild(t.view)
-    console.log(t.view)
     stage.draw()
     setInterval (() => {
         // t.travelForward()
         // l.translate({x: l.coord.x.add(new Grid(1)), y: l.coord.y})
         // console.log(t.end)
+        // l.devStart.addDays(1)
         stage.draw()
     }, 1000)
     const forward = document.querySelector('#forward')

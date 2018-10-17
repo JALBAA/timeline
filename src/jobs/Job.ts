@@ -1,5 +1,5 @@
-import Labour from "../workers/Labour";
-
+import {Labourable} from "../workers/Labour"
+import SuperDate from "../SuperDate";
 export enum JobStatus {
     None,
     Done,
@@ -17,39 +17,96 @@ export enum JobType {
 //     x: 0,
 //     y: 0
 // })
-export class Schedule {
-    developStart: Date = new Date
-    developEnd: Date = new Date
-    testStart: Date = new Date
-    testEnd: Date = new Date
-    release: Date = new Date
-    integrationStart: Date = new Date
-    integrationEnd: Date = new Date
-    finished: Date = new Date
+
+export interface Jobable {
+    addOwner (owner: Labourable): void
+    addPartener (partener: Labourable): void
 }
 
-export default class Job {
+export interface Scheduleable {
+    devStart: SuperDate
+    devEnd: SuperDate
+    testStart: SuperDate
+    testEnd: SuperDate
+    release: SuperDate
+    integrationStart: SuperDate
+    integrationEnd: SuperDate
+    finished: SuperDate
+}
+
+export class Schedule implements Scheduleable {
+    devStart: SuperDate = new SuperDate
+    devEnd: SuperDate = new SuperDate
+    testStart: SuperDate = new SuperDate
+    testEnd: SuperDate = new SuperDate
+    release: SuperDate = new SuperDate
+    integrationStart: SuperDate = new SuperDate
+    integrationEnd: SuperDate = new SuperDate
+    finished: SuperDate = new SuperDate
+}
+
+export default class Job implements Jobable, Scheduleable {
     status: JobStatus = JobStatus.None
     schedule: Schedule = new Schedule
     type: JobType = JobType.Default
     title = ''
     info = ''
-
-    constructor (title: string, info: string) {
-        this.initSchedule()
+    set devStart (date: SuperDate) {
+        this.schedule.devStart = date
     }
-    initSchedule () {
-        function dateAdd1Day (date: Date) : Date {
-            return new Date (date.getTime() + 1000 * 60 * 60 * 24)
+    set devEnd (date: SuperDate) {
+        if (date.isBefore(this.devStart)) throw new Error('结束日期不能超过开始日期')
+        this.schedule.devEnd = date
+    }
+    set testStart (date: SuperDate) {
+    }
+    set testEnd (date: SuperDate) {
+    }
+    set release (date: SuperDate) {
+    }
+    set integrationStart (date: SuperDate) {
+    }
+    set integrationEnd (date: SuperDate) {
+    }
+    set finished (date: SuperDate) {
+    }
+    get devStart () {
+        return this.schedule.devStart
+    }
+    get devEnd () {
+        return this.schedule.devEnd
+    }
+    get testStart () {
+        return this.schedule.testStart
+    }
+    get testEnd () {
+        return this.schedule.testEnd
+    }
+    get release () {
+        return this.schedule.release
+    }
+    get integrationStart () {
+        return this.schedule.integrationStart
+    }
+    get integrationEnd () {
+        return this.schedule.integrationEnd
+    }
+    get finished () {
+        return this.schedule.finished
+    }
+    constructor (title: string, info: string, start?: SuperDate, end?: SuperDate) {
+        if (!start) this.devStart = new SuperDate
+        this.initSchedule(start, end)
+    }
+    initSchedule (start?: SuperDate, end?: SuperDate) {
+        if (start) {
+            this.devStart = start
         }
-        this.schedule.developStart = new Date()
-        this.schedule.developEnd = dateAdd1Day(this.schedule.developStart)
-        this.schedule.testStart = dateAdd1Day(this.schedule.developEnd)
-        this.schedule.testEnd = dateAdd1Day(this.schedule.testStart)
-        this.schedule.release = dateAdd1Day(this.schedule.testEnd)
-        this.schedule.integrationStart = dateAdd1Day(this.schedule.release)
-        this.schedule.integrationEnd = dateAdd1Day(this.schedule.integrationStart)
-        this.schedule.finished = dateAdd1Day(this.schedule.integrationEnd)
+        if (end) {
+            this.devEnd = end
+        } else {
+            this.devEnd.update(this.devStart).addDays(1)
+        }
     }
 
     // owner: Owner | null = null
@@ -57,11 +114,11 @@ export default class Job {
     // partener: Partener[] | null = null
 
 
-    addOwner (owner: Labour) {
+    addOwner (owner: Labourable) {
 
     }
 
-    addPartener (partener: Labour) {
+    addPartener (partener: Labourable) {
 
     }
 }

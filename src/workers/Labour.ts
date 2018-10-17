@@ -4,8 +4,10 @@ export enum Sex {
     Man,
     Woman,
 }
+export interface Labourable {
 
-export default abstract class Labour {
+}
+export default class Labour implements Labourable{
     // jobs
     jobs: Job[] = []
     name: string = ''

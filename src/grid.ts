@@ -1,4 +1,4 @@
-export const unit = 25
+export const unit = 40
 export default class Grid {
     private _value = 0
     get value (): number {
