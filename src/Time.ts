@@ -1,29 +1,11 @@
 import RenderableObject, { Coord } from "./graphics/RenderableObject";
 import Grid from "./grid";
 import Container from "./graphics/Container";
-const ns = 'http://www.w3.org/2000/svg'
-import Options, {has, hasAll} from './utils/Options'
 import SuperDate from "./SuperDate";
+import { SVGNS } from "./utils/Global";
 
-// class Timeline extends RenderableObject{
-//     addChild (child: Day) {
-//         super.addChild(child)
-//     }
-//     removeChild (child: Day) {
-//         super.removeChild(child)
-//     }
-//     constructor () {
-//         super()
-//     }
-//     forward () {
-
-//     }
-//     backward () {
-
-//     }
-// }
 class DayTileBG extends RenderableObject {
-    node: SVGRectElement = document.createElementNS(ns, 'rect')
+    node: SVGRectElement = document.createElementNS(SVGNS, 'rect')
     oddOrEven = 'even'
     constructor () {
         super()
@@ -45,7 +27,7 @@ class DayTileBG extends RenderableObject {
     }
 }
 class DayText extends RenderableObject {
-    node: SVGTextElement = document.createElementNS(ns, 'text')
+    node: SVGTextElement = document.createElementNS(SVGNS, 'text')
     onDraw () {
         const newY = this.coord.y.sub(new Grid(.3))
         const newX = this.coord.x.add(new Grid(.2))
@@ -70,48 +52,53 @@ class DayTile extends Container {
         }
     }
     afterDraw () {
-        // this.node.setAttribute('font-size', '12px')
-        // this.node.setAttribute('x', this.coord.x.value.toString())
-        // this.node.setAttribute('y', this.coord.y.value.toString())
-        // const d =  this.day ? (this.day.date.getDate().toString()) : ''
-        // this.node.innerHTML = this.day ? d : 'no date'
-        // this.text.node.setAttribute('font-size', '12px')
-        // this.text.node.setAttribute('x', this.coord.x.value.toString())
-        // this.text.node.setAttribute('y', this.coord.y.value.toString())
-        const d =  this.day ? (this.day.date.getDate().toString()) : ''
-
+        const d =  this.day ? (this.day.getNumber().toString()) : ''
         this.text.node.innerHTML = this.day ? d : 'no date'
     }
 }
 
 class MonthTile extends RenderableObject {
-    node: SVGGElement = document.createElementNS(ns, 'g')
+    node: SVGGElement = document.createElementNS(SVGNS, 'g')
 }
 
 export class TimeRuler extends Container {
-    addChild (child: DayTile) {
+    addChild (child: Day) {
         super.addChild(child)
     }
-    removeChild (child: DayTile) {
+    removeChild (child: Day) {
         super.removeChild(child)
     }
-    updateData (days: Day[], pivotPos: number) {
+    updateData (days: Day[], months: Day[], pivotPos: number) {
         this.removeAll()
+        
         days.forEach((day, index) => {
-            const tile = new DayTile(day)
+            const tile = new Day(day)
+            if (day.getNumber() == 1) {
+                months.forEach((dayInMonth) => {
+                    const tile = new Month(dayInMonth)
+                    tile.translate({
+                        x: new Grid(index - pivotPos),
+                        y: new Grid(0),//new Grid(this.coord.y),
+                    })
+                    this.addChild(tile)
+                })
+            }
             tile.translate({
                 x: new Grid(index - pivotPos),
-                y: new Grid(0),//new Grid(this.coord.y),
+                y: new Grid(1),//new Grid(this.coord.y),
             })
             this.addChild(tile)
         })
     }
 }
-
-export class Day  {
-    // node: SVGTextElement = document.createElementNS(ns, 'text')
-    date = new SuperDate
+interface SubDateable {
+    date: SuperDate
+    getTime () : number
+}
+abstract class MoveableDate extends Container {
+    date: SuperDate = new SuperDate
     constructor (d: Day | SuperDate | null) {
+        super()
         if (d) {
             this.date = new SuperDate(d.getTime())
         }
@@ -131,11 +118,70 @@ export class Day  {
     getTime () {
         return this.date.getTime()
     }
+    getNumber () {}
+}
+export class Year extends MoveableDate {
+
+}
+export class Month extends MoveableDate {
+    bg: DayTileBG = new DayTileBG
+    text: DayText = new DayText
+    constructor (day: Day | SuperDate | null) {
+        super(day)
+        this.bg.oddOrEven = 'even'
+        this.addChild(this.bg)
+        this.addChild(this.text)
+        this.text.translate(this.coord)
+        this.bg.translate(this.coord)
+    }
+    getNumber () {
+        return this.date.getMonth()
+    }
+    afterDraw () {
+        this.text.node.innerHTML = this.getNumber().toString()
+    }
 }
 
-export class Time {
+export class Day extends MoveableDate {
+    bg: DayTileBG = new DayTileBG
+    text: DayText = new DayText
+    constructor (day: Day | SuperDate | null) {
+        super(day)
+        this.addChild(this.bg)
+        this.addChild(this.text)
+        this.text.translate(this.coord)
+        this.bg.translate(this.coord)
+    }
+    afterDraw () {
+        this.text.node.innerHTML = this.getNumber().toString()
+    }
+    getNumber () {
+        return this.date.getDate()
+    }
+}
+
+
+class DayTiles extends Container {
+
+}
+class MonthTiles extends Container {
+
+}
+
+export class Tt extends Container {
+    // days
+    // months
+    // end
+    // start
+    // pivot
+    // pivotPos
+    // daysRange
+}
+
+export class Time extends TimeRuler {
     days: Day[] = []
-    view: TimeRuler = new TimeRuler
+    months: any[] = []
+    years: any[] = []
     end: Day | null = null
     start: Day | null = null
     // pivot就是屏幕左边原点
@@ -144,6 +190,7 @@ export class Time {
     pivotPos = 5
     dayLength = 30
     constructor (d: Day | SuperDate | null = null) {
+        super()
         if (d) {
             if (d instanceof Day) {
                 this.pivot = d
@@ -161,10 +208,14 @@ export class Time {
             this.days = []
             while (pointer.getTime() < this.start.getTime()) {
                 this.days.push(new Day(pointer))
+                if (pointer.getNumber() == 1) {
+                    const month = new Month(pointer)
+                    this.months.push(month)
+                }
                 pointer = pointer.addDayByNumber(1)
             }
         }
-        this.view.updateData(this.days, this.pivotPos)
+        this.updateData(this.days, this.months, this.pivotPos)
     }
     travelForward () {
         this.pivot = this.pivot.addDayByNumber(1)
@@ -204,7 +255,7 @@ class Coordinate  {
     
 }
 
-export class Timer implements  Dateable{
+export class Timer implements Dateable {
     updateDays () {
 
     }

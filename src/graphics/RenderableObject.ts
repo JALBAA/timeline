@@ -6,6 +6,38 @@ export type Coord = {
 }
 export const UNIT: number = 10
 let cid: number = 0
+
+export interface Styleable {
+    style () : void
+}
+type StyleableRenderable = {
+    prototype: {
+        onDraw (): void,
+        style () : void,
+        // __proto__: any,
+    },
+}
+type SuperStyle = {
+    style () : void,
+    __proto__: SuperStyle | undefined | null,
+}
+export function Styler <T extends StyleableRenderable> (cons: T) : T {
+    // const draw = cons.prototype.onDraw
+    // cons.prototype.onDraw = function (...args: []) {
+    //     this.style()
+    //     const superStyle = (sup: SuperStyle) => {
+    //         if (sup && sup.style) {
+    //             sup.style.apply(this)
+    //             if (sup.__proto__)
+    //                 superStyle(sup.__proto__)
+    //         }
+    //     }
+    //     // if (this.__proto__)
+    //         // superStyle(this.__proto__)
+    //     draw.apply(this, args)
+    // }
+    return cons
+}
 export interface Renderable {
     coord: Coord,
     height: Grid,
@@ -21,9 +53,11 @@ export interface Renderable {
     getWorldPos (): Coord
     translate (coord: Coord): void
     draw (): void
-    beforeDraw () : void 
+    beforeDraw () : void
     afterDraw () : void
 }
+
+
 export default abstract class RenderableObject implements Renderable {
     coord = {
         x: new Grid(0),

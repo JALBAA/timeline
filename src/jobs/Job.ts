@@ -1,4 +1,4 @@
-import {Labourable} from "../workers/Labour"
+import {Labourable, LabourType} from "../workers/Labour"
 import SuperDate from "../SuperDate";
 export enum JobStatus {
     None,
@@ -115,10 +115,10 @@ export default class Job implements Jobable, Scheduleable {
 
 
     addOwner (owner: Labourable) {
-
+        owner.setLabourType(LabourType.Owner)
     }
 
     addPartener (partener: Labourable) {
-
+        partener.setLabourType(LabourType.Partener)
     }
 }

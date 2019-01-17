@@ -1,9 +1,9 @@
 import Job, { Jobable, Scheduleable } from "./Job"
 import {JobStatus, JobType, Schedule} from './Job'
-import Labour, { Labourable } from "../workers/Labour"
+import Labour, { Labourable, LabourType } from "../workers/Labour"
 import Line from "../graphics/Line";
 import Stage from "../Stage";
-import RenderableObject from  "../graphics/RenderableObject"
+import RenderableObject, { Styler } from  "../graphics/RenderableObject"
 import {Renderable, Coord} from  "../graphics/RenderableObject"
 import Grid from "../grid";
 import Railway from "../graphics/Railway";
@@ -14,7 +14,13 @@ export default class RenderableJob {
    job = new Job('', '')
    view: Renderable | null = null
 }
-
+class Text extends RenderableObject {
+    node: SVGTextElement = document.createElementNS(ns, 'text')
+    textContent: String = ''
+    onDraw () {
+        this.node.textContent = this.textContent
+    }
+}
 export class Icon extends RenderableObject {
     node: SVGCircleElement = document.createElementNS(ns, 'circle')
     get width () {
@@ -35,17 +41,51 @@ export class Icon extends RenderableObject {
     }
 }
 
-export class LabourIcon extends Icon implements Labourable {
+export class LabourIcon extends Container implements Labourable {
     labour: Labour = new Labour
+    jobs: Array <Job & RenderableObject> = []
+    name: string = ""
+    icon: Icon = new Icon
+    text: Text = new Text
+    constructor () {
+        super()
+        this.addChild(this.icon)
+        this.addChild(this.text)
+    }
+    get type () {
+        return this.labour.type
+    }
+    setLabourType (type: LabourType) {
+        this.labour.setLabourType(type)
+    }
+    addJob (node: Job & RenderableObject) {
+        this.jobs.push(node)
+    }
+    onDraw () {
+        super.onDraw()
+        if (this.type == LabourType.Owner) {
+            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:yellow')
+        } else {
+            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:pink')
+        }
+    }
 }
+
 
 const ns = 'http://www.w3.org/2000/svg'
 
 
-
-export class LineJob extends Line implements Jobable, Scheduleable{
+export class LineJob extends Line implements Jobable, Scheduleable {
     job: Job = new Job('', '')
     labours: Array<Labourable & Renderable> = []
+    // height: Grid = new Grid(1)
+    private _height: Grid = new Grid(1)
+    set height (val: Grid) {
+        this._height = val
+    }
+    get height () : Grid {
+        return this._height
+    }
     set devStart (date: SuperDate) {
         this.job.devStart = date
     }
@@ -94,6 +134,7 @@ export class LineJob extends Line implements Jobable, Scheduleable{
         this.job.addPartener(partener)
         this.labours.push(partener)
         this.addChild(partener)
+        this.height = new Grid(2)
     }
     onDraw () {
         const startPos = DateToCoord.fromDateToCoord(this.devStart)

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -70,9 +70,80 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const grid_1 = __webpack_require__(1);
+exports.unit = 40;
+class Grid {
+    constructor(n) {
+        this._value = 0;
+        if (n instanceof Grid) {
+            this._value = n.valueOf();
+        }
+        else {
+            this._value = n * exports.unit;
+        }
+    }
+    get value() {
+        return this._value;
+    }
+    add(g) {
+        return new Grid((this._value + g.value) / exports.unit);
+    }
+    sub(g) {
+        return new Grid((this._value - g.value) / exports.unit);
+    }
+    mul(g) {
+        if (g instanceof Number) {
+            return new Grid(this._value * g);
+        }
+        else {
+            return new Grid((this._value / exports.unit) * (g.value / exports.unit));
+        }
+    }
+    div(g) {
+        if (g instanceof Number) {
+            return new Grid(this._value / g);
+        }
+        else {
+            return new Grid((this._value / exports.unit) / (g.value / exports.unit));
+        }
+    }
+    valueOf() {
+        return this.value;
+    }
+    toString() {
+        return this.value.toString();
+    }
+}
+exports.default = Grid;
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const grid_1 = __webpack_require__(0);
 exports.UNIT = 10;
 let cid = 0;
+function Styler(cons) {
+    // const draw = cons.prototype.onDraw
+    // cons.prototype.onDraw = function (...args: []) {
+    //     this.style()
+    //     const superStyle = (sup: SuperStyle) => {
+    //         if (sup && sup.style) {
+    //             sup.style.apply(this)
+    //             if (sup.__proto__)
+    //                 superStyle(sup.__proto__)
+    //         }
+    //     }
+    //     // if (this.__proto__)
+    //         // superStyle(this.__proto__)
+    //     draw.apply(this, args)
+    // }
+    return cons;
+}
+exports.Styler = Styler;
 class RenderableObject {
     constructor() {
         this.coord = {
@@ -176,67 +247,14 @@ exports.default = RenderableObject;
 
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.unit = 40;
-class Grid {
-    constructor(n) {
-        this._value = 0;
-        if (n instanceof Grid) {
-            this._value = n.valueOf();
-        }
-        else {
-            this._value = n * exports.unit;
-        }
-    }
-    get value() {
-        return this._value;
-    }
-    add(g) {
-        return new Grid((this._value + g.value) / exports.unit);
-    }
-    sub(g) {
-        return new Grid((this._value - g.value) / exports.unit);
-    }
-    mul(g) {
-        if (g instanceof Number) {
-            return new Grid(this._value * g);
-        }
-        else {
-            return new Grid((this._value / exports.unit) * (g.value / exports.unit));
-        }
-    }
-    div(g) {
-        if (g instanceof Number) {
-            return new Grid(this._value / g);
-        }
-        else {
-            return new Grid((this._value / exports.unit) / (g.value / exports.unit));
-        }
-    }
-    valueOf() {
-        return this.value;
-    }
-    toString() {
-        return this.value.toString();
-    }
-}
-exports.default = Grid;
-
-
-/***/ }),
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(0);
-const Global_1 = __webpack_require__(6);
+const RenderableObject_1 = __webpack_require__(1);
+const Global_1 = __webpack_require__(4);
 class Container extends RenderableObject_1.default {
     constructor() {
         super(...arguments);
@@ -255,135 +273,44 @@ exports.default = Container;
 
 "use strict";
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-// import Handle from "./Handle";
-const RenderableObject_1 = __webpack_require__(0);
-const grid_1 = __webpack_require__(1);
-const Container_1 = __webpack_require__(2);
-const ns = 'http://www.w3.org/2000/svg';
-class Handle extends RenderableObject_1.default {
+const grid_1 = __webpack_require__(0);
+var Sex;
+(function (Sex) {
+    Sex[Sex["Man"] = 0] = "Man";
+    Sex[Sex["Woman"] = 1] = "Woman";
+})(Sex = exports.Sex || (exports.Sex = {}));
+var LabourType;
+(function (LabourType) {
+    LabourType[LabourType["Owner"] = 0] = "Owner";
+    LabourType[LabourType["Partener"] = 1] = "Partener";
+})(LabourType = exports.LabourType || (exports.LabourType = {}));
+class Labour {
     constructor() {
-        super();
-        this.node = document.createElementNS(ns, 'circle');
-        this.radius = new grid_1.default(.5);
+        // jobs
+        this.jobs = [];
+        this.name = '';
+        this.givenName = '';
+        this.familyName = '';
+        this.sex = Sex.Man;
+        this.type = LabourType.Partener;
     }
-    get width() {
-        // this.width == this.height, they are all refer to radius
-        return this.radius.mul(new grid_1.default(2));
+    addJob(node) {
+        this.jobs.push(node);
     }
     get height() {
-        // this.width == this.height, they are all refer to radius
-        return this.radius.mul(new grid_1.default(2));
+        if (this.jobs.length > 0)
+            return this.jobs[0].height;
+        else
+            return new grid_1.default(0);
     }
-    set width(val) {
-        this.radius = val.div(new grid_1.default(2));
+    removeJob() {
     }
-    set height(val) {
-        this.radius = val.div(new grid_1.default(2));
-    }
-    onDraw() {
-        this.node.setAttribute('cx', this.coord.x.add(this.radius).toString());
-        this.node.setAttribute('cy', this.coord.y.add(this.radius).toString());
-        this.node.setAttribute('r', (this.radius.value).toString());
+    setLabourType(type) {
+        this.type = type;
     }
 }
-exports.Handle = Handle;
-class Path extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        // private _height: number = 0
-        // private _width: number = 0
-        // get height () {
-        //     return this._height
-        // }
-        // get width () {
-        //     return this._width
-        // }
-        this.node = document.createElementNS(ns, 'line');
-    }
-    onDraw() {
-        this.node.setAttribute('x1', this.coord.x.toString());
-        this.node.setAttribute('y1', this.coord.y.add(this.height.div(new grid_1.default(2))).toString());
-        this.node.setAttribute('x2', (this.coord.x.add(this.width)).value.toString());
-        this.node.setAttribute('y2', this.coord.y.add(this.height.div(new grid_1.default(2))).toString());
-    }
-}
-exports.Path = Path;
-function test(target, propertyKey, descriptor) {
-    console.log('ee', target, propertyKey, descriptor);
-}
-;
-const b = {};
-function container(constructor) {
-    // const ff = function () {
-    //     this.call(constructor)
-    // }
-    // class ff extends constructor {
-    //     node = document.createElementNS(SVGNS, 'g')
-    //     constructor (...args: any[]) {
-    //         super(args)
-    //     }
-    // }
-    // class extends constructor {
-    //     node = document.createElementNS(SVGNS, 'g')
-    // }
-    // ff.prototype.node = document.createElementNS(SVGNS, 'g')
-    const onDraw = constructor.prototype.onDraw;
-    constructor.prototype.onDraw = function () {
-        this.node.setAttribute('transform', `translate(${this.coord.x}, ${this.coord.y})`);
-        onDraw.call(this);
-    };
-    return constructor;
-}
-let Line = class Line extends Container_1.default {
-    constructor() {
-        super();
-        this.leftHandle = new Handle;
-        this.rightHandle = new Handle;
-        this.path = new Path;
-        this._width = new grid_1.default(1);
-        this.addChild(this.path);
-        // this.path.translate({
-        //     x: this.path.coord.x,
-        //     y: new Grid(0),//this.path.height.div(new Grid(2)),
-        // })
-        this.addChild(this.leftHandle);
-        // this.leftHandle.translate({
-        //     x: this.leftHandle.width,
-        //     y: new Grid(0), //this.height.div(new Grid(2)),
-        // })
-        this.addChild(this.rightHandle);
-    }
-    get width() {
-        return this._width;
-    }
-    set width(l) {
-        if (this.rightHandle) {
-            const coord = this.rightHandle.coord;
-            this._width = l;
-            this.rightHandle.translate({
-                x: l.sub(this.rightHandle.width),
-                y: new grid_1.default(0),
-            });
-            this.path.width = l;
-        }
-    }
-    onDraw() {
-        if (this.node)
-            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:red');
-        // super.onDraw()
-    }
-};
-Line = __decorate([
-    container
-], Line);
-exports.default = Line;
+exports.default = Labour;
 
 
 /***/ }),
@@ -393,50 +320,7 @@ exports.default = Line;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(0);
-const grid_1 = __webpack_require__(1);
-const Container_1 = __webpack_require__(2);
-const ns = 'http://www.w3.org/2000/svg';
-class RailwayEntity extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.height = new grid_1.default(1);
-        this.coord = {
-            x: new grid_1.default(0),
-            y: new grid_1.default(0),
-        };
-        this.node = document.createElementNS(ns, 'rect');
-    }
-    onDraw() {
-        if (this.parent) {
-            this.node.setAttribute('height', this.height.toString());
-            this.node.setAttribute('width', (this.parent.width).mul(new grid_1.default(50)).value.toString());
-        }
-        this.node.setAttribute('x', this.coord.x.toString());
-        this.node.setAttribute('y', this.coord.y.toString());
-        // this.node.setAttribute('y', (y.add(new Grid(.5)).value/* - this.height.value/2*/).toString())
-        this.node.setAttribute('style', 'stroke-width: 0;stroke: gray;fill: rgba(0,0,0,0.2);');
-    }
-}
-class Railway extends Container_1.default {
-    constructor() {
-        super();
-        // _draw () {
-        //     this._detectCollision()
-        // }
-        // detect lines coliision
-        this.railway = new RailwayEntity;
-        this.addChild(this.railway);
-    }
-    onDraw() {
-        this._detectCollision();
-        super.onDraw();
-    }
-    _detectCollision() {
-        // 
-    }
-}
-exports.default = Railway;
+exports.SVGNS = 'http://www.w3.org/2000/svg';
 
 
 /***/ }),
@@ -446,132 +330,42 @@ exports.default = Railway;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const Line_1 = __webpack_require__(3);
-const Stage_1 = __webpack_require__(7);
-const grid_1 = __webpack_require__(1);
-const Railway_1 = __webpack_require__(4);
-const Debug_1 = __webpack_require__(8);
-const Time_1 = __webpack_require__(9);
-const RenderableJob_1 = __webpack_require__(10);
-// const l = new Line
-const l2 = new Line_1.default;
-const debugGrid = new Debug_1.DebugGrid;
-const body = document.querySelector('body');
-if (body) {
-    const stage = new Stage_1.default(body, 500, 500);
-    stage.addChild(debugGrid);
-    const railway = new Railway_1.default;
-    const l = new RenderableJob_1.LineJob();
-    const labour = new RenderableJob_1.LabourIcon();
-    const partener1 = new RenderableJob_1.LabourIcon();
-    const partener2 = new RenderableJob_1.LabourIcon();
-    const partener3 = new RenderableJob_1.LabourIcon();
-    l.addOwner(labour);
-    l.addPartener(partener1);
-    l.addPartener(partener2);
-    l.addPartener(partener3);
-    // const r2 = new Railway
-    // const l3 = new Line
-    // r2.addChild(l3)
-    // r2.translate({
-    //     x: new Grid(0),
-    //     y: new Grid(2),
-    // })
-    // l3.width = new Grid(5)
-    // r2.height = new Grid(2)
-    // stage.addChild(r2)
-    // // svg.appendChild(l.node)
-    // // svg.appendChild(l2.node)
-    railway.addChild(l);
-    // railway.addChild(l2)
-    // railway.height = new Grid(2)
-    // railway.translate({
-    //     y: new Grid(1),
-    //     x: new Grid(0),
-    // })
-    stage.addChild(railway);
-    // // stage.addChild(l)
-    // // stage.addChild(l2)
-    railway.translate({ x: new grid_1.default(0), y: new grid_1.default(2) });
-    // l.width = new Grid(5)
-    l.devEnd.addDays(10);
-    l.devStart.addDays(1);
-    console.log(l);
-    document.addEventListener('keyup', (e) => {
-        if (e.keyCode == 40) {
-            railway.translate({
-                y: railway.coord.y.add(new grid_1.default(1)),
-                x: railway.coord.x,
-            });
-        }
-        else if (e.keyCode == 38) {
-            railway.translate({
-                y: railway.coord.y.sub(new grid_1.default(1)),
-                x: railway.coord.x,
-            });
-        }
-        if (e.keyCode == 37) {
-            l.translate({
-                x: l.coord.x.sub(new grid_1.default(1)),
-                y: l.coord.y
-            });
-        }
-        else if (e.keyCode == 39) {
-            l.translate({
-                x: l.coord.x.add(new grid_1.default(1)),
-                y: l.coord.y
-            });
-        }
-        stage.draw();
-    });
-    // l2.translate({x: new Grid(4), y: new Grid(.5)})
-    // l2.width = new Grid(3)
-    // stage.draw()
-    // setTimeout (() => {
-    //     // const coord = l.coord
-    //     // l.translate({x: l.coord.x.add(new Grid(1)), y: l.coord.y})
-    //     // l.width = l.width.add(new Grid(1))
-    //     // l.draw()
-    //     l2.width = l2.width.add(new Grid(1))
-    //     stage.draw()
-    // }, 1600)
-    const t = new Time_1.Time;
-    t.view.translate({
-        x: t.view.coord.x,
-        y: new grid_1.default(1),
-    });
-    Time_1.DateToCoord.globalTime = t;
-    // t.travelForward()
-    stage.addChild(t.view);
-    stage.draw();
-    setInterval(() => {
-        // t.travelForward()
-        // l.translate({x: l.coord.x.add(new Grid(1)), y: l.coord.y})
-        // console.log(t.end)
-        // l.devStart.addDays(1)
-        stage.draw();
-    }, 1000);
-    const forward = document.querySelector('#forward');
-    if (forward) {
-        forward.addEventListener('click', e => {
-            t.travelForward();
-            stage.draw();
-        });
+class SuperDate extends Date {
+    subDays(days) {
+        if (days < 0)
+            throw new Error('no negative');
+        this.setTime(this.getTime() + days * 1000 * 60 * 60 * 24);
     }
-    const backward = document.querySelector('#backward');
-    if (backward) {
-        backward.addEventListener('click', e => {
-            t.travelBackward();
-            stage.draw();
-        });
+    addDays(days) {
+        if (days < 0)
+            throw new Error('no negative');
+        this.setTime(this.getTime() + days * 1000 * 60 * 60 * 24);
+    }
+    daysBetween2Date(date) {
+        return Math.abs((this.getTime() - date.getTime()) / 24 / 60 / 60 / 1000);
+    }
+    isBefore(date) {
+        if (this.getTime() >= date.getTime()) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    isAfter(date) {
+        if (this.getTime() <= date.getTime()) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    update(date) {
+        this.setTime(date.getTime());
+        return this;
     }
 }
-// forward.
-Object.defineProperty(window, 'Grid', {
-    value: grid_1.default,
-});
-var g1 = new grid_1.default(0);
-var g2 = new grid_1.default(1);
+exports.default = SuperDate;
 
 
 /***/ }),
@@ -581,7 +375,30 @@ var g2 = new grid_1.default(1);
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SVGNS = 'http://www.w3.org/2000/svg';
+const Stage_1 = __webpack_require__(7);
+const Debug_1 = __webpack_require__(8);
+const Table_1 = __webpack_require__(9);
+const RenderableJob_1 = __webpack_require__(10);
+const Labour_1 = __webpack_require__(3);
+const grid_1 = __webpack_require__(0);
+const body = document.querySelector('body');
+if (body) {
+    const stage = new Stage_1.default(body, 500, 500);
+    const debugGrid = new Debug_1.DebugGrid;
+    // stage.addChild(debugGrid)
+    const table = new Table_1.Table;
+    table.coord.x = new grid_1.default(1);
+    stage.addChild(table);
+    const labour1 = new RenderableJob_1.LabourIcon;
+    labour1.setLabourType(Labour_1.LabourType.Owner);
+    table.addLabour(labour1);
+    const labour2 = new RenderableJob_1.LabourIcon;
+    labour2.setLabourType(Labour_1.LabourType.Owner);
+    table.addLabour(labour2);
+    setTimeout(() => {
+        stage.draw();
+    });
+}
 
 
 /***/ }),
@@ -591,7 +408,7 @@ exports.SVGNS = 'http://www.w3.org/2000/svg';
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(0);
+const RenderableObject_1 = __webpack_require__(1);
 // import Coordinate from "./graphics/Coordinate";
 // import Drawable from "./interface/Drawable";
 // import Rail from "./graphics/Rail";
@@ -643,8 +460,8 @@ exports.default = Stage;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(0);
-const grid_1 = __webpack_require__(1);
+const RenderableObject_1 = __webpack_require__(1);
+const grid_1 = __webpack_require__(0);
 class Tile extends RenderableObject_1.default {
     constructor() {
         super(...arguments);
@@ -709,249 +526,25 @@ exports.DebugGrid = DebugGrid;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(0);
-const grid_1 = __webpack_require__(1);
 const Container_1 = __webpack_require__(2);
-const ns = 'http://www.w3.org/2000/svg';
-const SuperDate_1 = __webpack_require__(12);
-// class Timeline extends RenderableObject{
-//     addChild (child: Day) {
-//         super.addChild(child)
-//     }
-//     removeChild (child: Day) {
-//         super.removeChild(child)
-//     }
-//     constructor () {
-//         super()
-//     }
-//     forward () {
-//     }
-//     backward () {
-//     }
-// }
-class DayTileBG extends RenderableObject_1.default {
-    constructor() {
-        super();
-        this.node = document.createElementNS(ns, 'rect');
-        this.oddOrEven = 'even';
-        if (this._cid % 2 != 0) {
-            this.oddOrEven = 'odd';
+const Labour_1 = __webpack_require__(3);
+const grid_1 = __webpack_require__(0);
+class Table extends Container_1.default {
+    addLabour(node) {
+        if (node.type == Labour_1.LabourType.Owner) {
+            super.addChild(node);
+            this.height = this.height.add(new grid_1.default(1));
+            node.coord.y = this.height;
+            node.coord.x = new grid_1.default(-1);
         }
+        else
+            throw new Error('illegal type');
     }
-    onDraw() {
-        const newY = (this.coord.y.sub(this.height));
-        if (this.oddOrEven == 'even') {
-            this.node.setAttribute('style', 'stroke-width: .5;stroke: gray;fill: rgba(255,255,255,1);');
-        }
-        else {
-            this.node.setAttribute('style', 'stroke-width: .5;stroke: gray;fill: rgba(200,200,200,1);');
-        }
-        this.node.setAttribute('x', this.coord.x.toString());
-        this.node.setAttribute('y', newY.toString());
-        this.node.setAttribute('width', this.width.toString());
-        this.node.setAttribute('height', this.height.toString());
-    }
-}
-class DayText extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(ns, 'text');
-    }
-    onDraw() {
-        const newY = this.coord.y.sub(new grid_1.default(.3));
-        const newX = this.coord.x.add(new grid_1.default(.2));
-        this.node.setAttribute('font-size', '12px');
-        this.node.setAttribute('x', newX.toString());
-        this.node.setAttribute('y', newY.toString());
-    }
-}
-class DayTile extends Container_1.default {
-    constructor(day) {
-        super();
-        // node: SVGTextElement = document.createElementNS(ns, 'text')
-        this.day = null;
-        this.bg = new DayTileBG;
-        this.text = new DayText;
-        this.addChild(this.bg);
-        this.addChild(this.text);
-        this.text.translate(this.coord);
-        this.bg.translate(this.coord);
-        if (day) {
-            this.day = day;
-        }
-    }
-    afterDraw() {
-        // this.node.setAttribute('font-size', '12px')
-        // this.node.setAttribute('x', this.coord.x.value.toString())
-        // this.node.setAttribute('y', this.coord.y.value.toString())
-        // const d =  this.day ? (this.day.date.getDate().toString()) : ''
-        // this.node.innerHTML = this.day ? d : 'no date'
-        // this.text.node.setAttribute('font-size', '12px')
-        // this.text.node.setAttribute('x', this.coord.x.value.toString())
-        // this.text.node.setAttribute('y', this.coord.y.value.toString())
-        const d = this.day ? (this.day.date.getDate().toString()) : '';
-        this.text.node.innerHTML = this.day ? d : 'no date';
-    }
-}
-class MonthTile extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(ns, 'g');
-    }
-}
-class TimeRuler extends Container_1.default {
     addChild(child) {
-        super.addChild(child);
-    }
-    removeChild(child) {
-        super.removeChild(child);
-    }
-    updateData(days, pivotPos) {
-        this.removeAll();
-        days.forEach((day, index) => {
-            const tile = new DayTile(day);
-            tile.translate({
-                x: new grid_1.default(index - pivotPos),
-                y: new grid_1.default(0),
-            });
-            this.addChild(tile);
-        });
+        throw new Error('w');
     }
 }
-exports.TimeRuler = TimeRuler;
-class Day {
-    constructor(d) {
-        // node: SVGTextElement = document.createElementNS(ns, 'text')
-        this.date = new SuperDate_1.default;
-        if (d) {
-            this.date = new SuperDate_1.default(d.getTime());
-        }
-    }
-    addDayByNumber(d) {
-        return new Day(new SuperDate_1.default(this.date.getTime() + d * 1000 * 60 * 60 * 24));
-    }
-    subDayByNumber(d) {
-        return new Day(new SuperDate_1.default(this.date.getTime() - d * 1000 * 60 * 60 * 24));
-    }
-    forward() {
-        this.date = new SuperDate_1.default(this.date.getTime() + 1000 * 60 * 60 * 24);
-    }
-    backward() {
-        this.date = new SuperDate_1.default(this.date.getTime() - 1000 * 60 * 60 * 24);
-    }
-    getTime() {
-        return this.date.getTime();
-    }
-}
-exports.Day = Day;
-class Time {
-    constructor(d = null) {
-        this.days = [];
-        this.view = new TimeRuler;
-        this.end = null;
-        this.start = null;
-        // pivot就是屏幕左边原点
-        // 显示30天，前15，后15
-        this.pivot = new Day(new SuperDate_1.default);
-        this.pivotPos = 5;
-        this.dayLength = 30;
-        if (d) {
-            if (d instanceof Day) {
-                this.pivot = d;
-            }
-            else if (d instanceof SuperDate_1.default) {
-                this.pivot = new Day(d);
-            }
-        }
-        this.end = this.pivot.subDayByNumber(this.pivotPos);
-        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
-        this.updateDays();
-    }
-    updateDays() {
-        if (this.end && this.start) {
-            let pointer = new Day(new SuperDate_1.default(this.end.date.getTime()));
-            this.days = [];
-            while (pointer.getTime() < this.start.getTime()) {
-                this.days.push(new Day(pointer));
-                pointer = pointer.addDayByNumber(1);
-            }
-        }
-        this.view.updateData(this.days, this.pivotPos);
-    }
-    travelForward() {
-        this.pivot = this.pivot.addDayByNumber(1);
-        this.end = this.pivot.subDayByNumber(this.pivotPos);
-        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
-        this.updateDays();
-        // this.days.shift()
-        // if (this.end)
-        //     this.days.push(this.end)
-    }
-    travelBackward() {
-        this.pivot = this.pivot.addDayByNumber(-1);
-        this.end = this.pivot.subDayByNumber(this.pivotPos);
-        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
-        this.updateDays();
-        // this.days.pop()
-        // if (this.start)
-        //     this.days.unshift(this.start)
-    }
-}
-exports.Time = Time;
-class Coordinate {
-}
-class Timer {
-    updateDays() {
-    }
-    travelForward() {
-    }
-    travelBackward() {
-    }
-}
-exports.Timer = Timer;
-class WordCoordinate {
-}
-class TimeCoordCommander {
-    constructor(timer, coord) {
-        this.cbList = [];
-        this.timer = timer;
-        this.coord = coord;
-    }
-    updateDays() {
-        if (this.timer && this.coord) {
-        }
-    }
-    travelForward() {
-    }
-    travelBackward() {
-    }
-    notify(evt, arg) {
-    }
-    on(evt, cb) {
-    }
-}
-exports.TimeCoordCommander = TimeCoordCommander;
-class DateToCoord {
-    static fromDateToCoord(date) {
-        if (this.globalTime) {
-            const pivotDate = this.globalTime.pivot.date;
-            if (pivotDate.isAfter(date)) {
-                return -1 * pivotDate.daysBetween2Date(date);
-            }
-            else {
-                return pivotDate.daysBetween2Date(date);
-            }
-        }
-        else {
-            throw new Error('no globalTime');
-        }
-    }
-}
-DateToCoord.globalTime = null;
-exports.DateToCoord = DateToCoord;
-class TimeLine extends Container_1.default {
-}
-exports.TimeLine = TimeLine;
+exports.Table = Table;
 
 
 /***/ }),
@@ -962,12 +555,13 @@ exports.TimeLine = TimeLine;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const Job_1 = __webpack_require__(11);
-const Labour_1 = __webpack_require__(13);
-const Line_1 = __webpack_require__(3);
-const RenderableObject_1 = __webpack_require__(0);
-const grid_1 = __webpack_require__(1);
-const Railway_1 = __webpack_require__(4);
-const Time_1 = __webpack_require__(9);
+const Labour_1 = __webpack_require__(3);
+const Line_1 = __webpack_require__(12);
+const RenderableObject_1 = __webpack_require__(1);
+const grid_1 = __webpack_require__(0);
+const Railway_1 = __webpack_require__(13);
+const Container_1 = __webpack_require__(2);
+const Time_1 = __webpack_require__(14);
 class RenderableJob {
     constructor() {
         this.job = new Job_1.default('', '');
@@ -975,6 +569,16 @@ class RenderableJob {
     }
 }
 exports.default = RenderableJob;
+class Text extends RenderableObject_1.default {
+    constructor() {
+        super(...arguments);
+        this.node = document.createElementNS(ns, 'text');
+        this.textContent = '';
+    }
+    onDraw() {
+        this.node.textContent = this.textContent;
+    }
+}
 class Icon extends RenderableObject_1.default {
     constructor() {
         super();
@@ -995,10 +599,34 @@ class Icon extends RenderableObject_1.default {
     }
 }
 exports.Icon = Icon;
-class LabourIcon extends Icon {
+class LabourIcon extends Container_1.default {
     constructor() {
-        super(...arguments);
+        super();
         this.labour = new Labour_1.default;
+        this.jobs = [];
+        this.name = "";
+        this.icon = new Icon;
+        this.text = new Text;
+        this.addChild(this.icon);
+        this.addChild(this.text);
+    }
+    get type() {
+        return this.labour.type;
+    }
+    setLabourType(type) {
+        this.labour.setLabourType(type);
+    }
+    addJob(node) {
+        this.jobs.push(node);
+    }
+    onDraw() {
+        super.onDraw();
+        if (this.type == Labour_1.LabourType.Owner) {
+            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:yellow');
+        }
+        else {
+            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:pink');
+        }
     }
 }
 exports.LabourIcon = LabourIcon;
@@ -1008,6 +636,14 @@ class LineJob extends Line_1.default {
         super(...arguments);
         this.job = new Job_1.default('', '');
         this.labours = [];
+        // height: Grid = new Grid(1)
+        this._height = new grid_1.default(1);
+    }
+    set height(val) {
+        this._height = val;
+    }
+    get height() {
+        return this._height;
     }
     set devStart(date) {
         this.job.devStart = date;
@@ -1059,6 +695,7 @@ class LineJob extends Line_1.default {
         this.job.addPartener(partener);
         this.labours.push(partener);
         this.addChild(partener);
+        this.height = new grid_1.default(2);
     }
     onDraw() {
         const startPos = Time_1.DateToCoord.fromDateToCoord(this.devStart);
@@ -1176,7 +813,8 @@ exports.JobRailway = JobRailway;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const SuperDate_1 = __webpack_require__(12);
+const Labour_1 = __webpack_require__(3);
+const SuperDate_1 = __webpack_require__(5);
 var JobStatus;
 (function (JobStatus) {
     JobStatus[JobStatus["None"] = 0] = "None";
@@ -1273,8 +911,10 @@ class Job {
     // owner: Owner | null = null
     // partener: Partener[] | null = null
     addOwner(owner) {
+        owner.setLabourType(Labour_1.LabourType.Owner);
     }
     addPartener(partener) {
+        partener.setLabourType(Labour_1.LabourType.Partener);
     }
 }
 exports.default = Job;
@@ -1287,42 +927,89 @@ exports.default = Job;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-class SuperDate extends Date {
-    subDays(days) {
-        if (days < 0)
-            throw new Error('no negative');
-        this.setTime(this.getTime() + days * 1000 * 60 * 60 * 24);
+// import Handle from "./Handle";
+const RenderableObject_1 = __webpack_require__(1);
+const grid_1 = __webpack_require__(0);
+const Container_1 = __webpack_require__(2);
+const Global_1 = __webpack_require__(4);
+class Handle extends RenderableObject_1.default {
+    constructor() {
+        super();
+        this.node = document.createElementNS(Global_1.SVGNS, 'circle');
+        this.radius = new grid_1.default(.5);
     }
-    addDays(days) {
-        if (days < 0)
-            throw new Error('no negative');
-        this.setTime(this.getTime() + days * 1000 * 60 * 60 * 24);
+    get width() {
+        return this.radius.mul(new grid_1.default(2));
     }
-    daysBetween2Date(date) {
-        return Math.abs((this.getTime() - date.getTime()) / 24 / 60 / 60 / 1000);
+    get height() {
+        return this.radius.mul(new grid_1.default(2));
     }
-    isBefore(date) {
-        if (this.getTime() >= date.getTime()) {
-            return false;
-        }
-        else {
-            return true;
-        }
+    set width(val) {
+        this.radius = val.div(new grid_1.default(2));
     }
-    isAfter(date) {
-        if (this.getTime() <= date.getTime()) {
-            return false;
-        }
-        else {
-            return true;
-        }
+    set height(val) {
+        this.radius = val.div(new grid_1.default(2));
     }
-    update(date) {
-        this.setTime(date.getTime());
-        return this;
+    onDraw() {
+        this.node.setAttribute('cx', this.coord.x.add(this.radius).toString());
+        this.node.setAttribute('cy', this.coord.y.add(this.radius).toString());
+        this.node.setAttribute('r', (this.radius.value).toString());
     }
 }
-exports.default = SuperDate;
+exports.Handle = Handle;
+class Path extends RenderableObject_1.default {
+    constructor() {
+        super(...arguments);
+        this.node = document.createElementNS(Global_1.SVGNS, 'line');
+    }
+    onDraw() {
+        this.node.setAttribute('x1', this.coord.x.toString());
+        this.node.setAttribute('y1', this.coord.y.add(this.height.div(new grid_1.default(2))).toString());
+        this.node.setAttribute('x2', (this.coord.x.add(this.width)).value.toString());
+        this.node.setAttribute('y2', this.coord.y.add(this.height.div(new grid_1.default(2))).toString());
+    }
+}
+exports.Path = Path;
+// @Styler
+class Line extends Container_1.default {
+    constructor() {
+        super();
+        this.leftHandle = new Handle;
+        this.rightHandle = new Handle;
+        this.path = new Path;
+        this._width = new grid_1.default(1);
+        this.addChild(this.path);
+        // this.path.translate({
+        //     x: this.path.coord.x,
+        //     y: new Grid(0),//this.path.height.div(new Grid(2)),
+        // })
+        this.addChild(this.leftHandle);
+        // this.leftHandle.translate({
+        //     x: this.leftHandle.width,
+        //     y: new Grid(0), //this.height.div(new Grid(2)),
+        // })
+        this.addChild(this.rightHandle);
+    }
+    get width() {
+        return this._width;
+    }
+    set width(l) {
+        if (this.rightHandle) {
+            const coord = this.rightHandle.coord;
+            this._width = l;
+            this.rightHandle.translate({
+                x: l.sub(this.rightHandle.width),
+                y: new grid_1.default(0),
+            });
+            this.path.width = l;
+        }
+    }
+    style() {
+        if (this.node)
+            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:red');
+    }
+}
+exports.default = Line;
 
 
 /***/ }),
@@ -1332,26 +1019,342 @@ exports.default = SuperDate;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Sex;
-(function (Sex) {
-    Sex[Sex["Man"] = 0] = "Man";
-    Sex[Sex["Woman"] = 1] = "Woman";
-})(Sex = exports.Sex || (exports.Sex = {}));
-class Labour {
+const RenderableObject_1 = __webpack_require__(1);
+const grid_1 = __webpack_require__(0);
+const Container_1 = __webpack_require__(2);
+const ns = 'http://www.w3.org/2000/svg';
+class RailwayEntity extends RenderableObject_1.default {
     constructor() {
-        // jobs
-        this.jobs = [];
-        this.name = '';
-        this.givenName = '';
-        this.familyName = '';
-        this.sex = Sex.Man;
+        super(...arguments);
+        this.height = new grid_1.default(1);
+        this.coord = {
+            x: new grid_1.default(0),
+            y: new grid_1.default(0),
+        };
+        this.node = document.createElementNS(ns, 'rect');
     }
-    addJob() {
-    }
-    removeJob() {
+    onDraw() {
+        if (this.parent) {
+            this.node.setAttribute('height', this.height.toString());
+            this.node.setAttribute('width', (this.parent.width).mul(new grid_1.default(50)).value.toString());
+        }
+        this.node.setAttribute('x', this.coord.x.toString());
+        this.node.setAttribute('y', this.coord.y.toString());
+        // this.node.setAttribute('y', (y.add(new Grid(.5)).value/* - this.height.value/2*/).toString())
+        this.node.setAttribute('style', 'stroke-width: 0;stroke: gray;fill: rgba(0,0,0,0.2);');
     }
 }
-exports.default = Labour;
+class Railway extends Container_1.default {
+    constructor() {
+        super();
+        // _draw () {
+        //     this._detectCollision()
+        // }
+        // detect lines coliision
+        this.railway = new RailwayEntity;
+        this.addChild(this.railway);
+    }
+    onDraw() {
+        this._detectCollision();
+        super.onDraw();
+    }
+    _detectCollision() {
+        // 
+    }
+}
+exports.default = Railway;
+
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const RenderableObject_1 = __webpack_require__(1);
+const grid_1 = __webpack_require__(0);
+const Container_1 = __webpack_require__(2);
+const SuperDate_1 = __webpack_require__(5);
+const Global_1 = __webpack_require__(4);
+class DayTileBG extends RenderableObject_1.default {
+    constructor() {
+        super();
+        this.node = document.createElementNS(Global_1.SVGNS, 'rect');
+        this.oddOrEven = 'even';
+        if (this._cid % 2 != 0) {
+            this.oddOrEven = 'odd';
+        }
+    }
+    onDraw() {
+        const newY = (this.coord.y.sub(this.height));
+        if (this.oddOrEven == 'even') {
+            this.node.setAttribute('style', 'stroke-width: .5;stroke: gray;fill: rgba(255,255,255,1);');
+        }
+        else {
+            this.node.setAttribute('style', 'stroke-width: .5;stroke: gray;fill: rgba(200,200,200,1);');
+        }
+        this.node.setAttribute('x', this.coord.x.toString());
+        this.node.setAttribute('y', newY.toString());
+        this.node.setAttribute('width', this.width.toString());
+        this.node.setAttribute('height', this.height.toString());
+    }
+}
+class DayText extends RenderableObject_1.default {
+    constructor() {
+        super(...arguments);
+        this.node = document.createElementNS(Global_1.SVGNS, 'text');
+    }
+    onDraw() {
+        const newY = this.coord.y.sub(new grid_1.default(.3));
+        const newX = this.coord.x.add(new grid_1.default(.2));
+        this.node.setAttribute('font-size', '12px');
+        this.node.setAttribute('x', newX.toString());
+        this.node.setAttribute('y', newY.toString());
+    }
+}
+class DayTile extends Container_1.default {
+    constructor(day) {
+        super();
+        // node: SVGTextElement = document.createElementNS(ns, 'text')
+        this.day = null;
+        this.bg = new DayTileBG;
+        this.text = new DayText;
+        this.addChild(this.bg);
+        this.addChild(this.text);
+        this.text.translate(this.coord);
+        this.bg.translate(this.coord);
+        if (day) {
+            this.day = day;
+        }
+    }
+    afterDraw() {
+        const d = this.day ? (this.day.getNumber().toString()) : '';
+        this.text.node.innerHTML = this.day ? d : 'no date';
+    }
+}
+class MonthTile extends RenderableObject_1.default {
+    constructor() {
+        super(...arguments);
+        this.node = document.createElementNS(Global_1.SVGNS, 'g');
+    }
+}
+class TimeRuler extends Container_1.default {
+    addChild(child) {
+        super.addChild(child);
+    }
+    removeChild(child) {
+        super.removeChild(child);
+    }
+    updateData(days, months, pivotPos) {
+        this.removeAll();
+        days.forEach((day, index) => {
+            const tile = new Day(day);
+            if (day.getNumber() == 1) {
+                months.forEach((dayInMonth) => {
+                    const tile = new Month(dayInMonth);
+                    tile.translate({
+                        x: new grid_1.default(index - pivotPos),
+                        y: new grid_1.default(0),
+                    });
+                    this.addChild(tile);
+                });
+            }
+            tile.translate({
+                x: new grid_1.default(index - pivotPos),
+                y: new grid_1.default(1),
+            });
+            this.addChild(tile);
+        });
+    }
+}
+exports.TimeRuler = TimeRuler;
+class MoveableDate extends Container_1.default {
+    constructor(d) {
+        super();
+        this.date = new SuperDate_1.default;
+        if (d) {
+            this.date = new SuperDate_1.default(d.getTime());
+        }
+    }
+    addDayByNumber(d) {
+        return new Day(new SuperDate_1.default(this.date.getTime() + d * 1000 * 60 * 60 * 24));
+    }
+    subDayByNumber(d) {
+        return new Day(new SuperDate_1.default(this.date.getTime() - d * 1000 * 60 * 60 * 24));
+    }
+    forward() {
+        this.date = new SuperDate_1.default(this.date.getTime() + 1000 * 60 * 60 * 24);
+    }
+    backward() {
+        this.date = new SuperDate_1.default(this.date.getTime() - 1000 * 60 * 60 * 24);
+    }
+    getTime() {
+        return this.date.getTime();
+    }
+    getNumber() { }
+}
+class Year extends MoveableDate {
+}
+exports.Year = Year;
+class Month extends MoveableDate {
+    constructor(day) {
+        super(day);
+        this.bg = new DayTileBG;
+        this.text = new DayText;
+        this.bg.oddOrEven = 'even';
+        this.addChild(this.bg);
+        this.addChild(this.text);
+        this.text.translate(this.coord);
+        this.bg.translate(this.coord);
+    }
+    getNumber() {
+        return this.date.getMonth();
+    }
+    afterDraw() {
+        this.text.node.innerHTML = this.getNumber().toString();
+    }
+}
+exports.Month = Month;
+class Day extends MoveableDate {
+    constructor(day) {
+        super(day);
+        this.bg = new DayTileBG;
+        this.text = new DayText;
+        this.addChild(this.bg);
+        this.addChild(this.text);
+        this.text.translate(this.coord);
+        this.bg.translate(this.coord);
+    }
+    afterDraw() {
+        this.text.node.innerHTML = this.getNumber().toString();
+    }
+    getNumber() {
+        return this.date.getDate();
+    }
+}
+exports.Day = Day;
+class DayTiles extends Container_1.default {
+}
+class MonthTiles extends Container_1.default {
+}
+class Tt extends Container_1.default {
+}
+exports.Tt = Tt;
+class Time extends TimeRuler {
+    constructor(d = null) {
+        super();
+        this.days = [];
+        this.months = [];
+        this.years = [];
+        this.end = null;
+        this.start = null;
+        // pivot就是屏幕左边原点
+        // 显示30天，前15，后15
+        this.pivot = new Day(new SuperDate_1.default);
+        this.pivotPos = 5;
+        this.dayLength = 30;
+        if (d) {
+            if (d instanceof Day) {
+                this.pivot = d;
+            }
+            else if (d instanceof SuperDate_1.default) {
+                this.pivot = new Day(d);
+            }
+        }
+        this.end = this.pivot.subDayByNumber(this.pivotPos);
+        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
+        this.updateDays();
+    }
+    updateDays() {
+        if (this.end && this.start) {
+            let pointer = new Day(new SuperDate_1.default(this.end.date.getTime()));
+            this.days = [];
+            while (pointer.getTime() < this.start.getTime()) {
+                this.days.push(new Day(pointer));
+                if (pointer.getNumber() == 1) {
+                    const month = new Month(pointer);
+                    this.months.push(month);
+                }
+                pointer = pointer.addDayByNumber(1);
+            }
+        }
+        this.updateData(this.days, this.months, this.pivotPos);
+    }
+    travelForward() {
+        this.pivot = this.pivot.addDayByNumber(1);
+        this.end = this.pivot.subDayByNumber(this.pivotPos);
+        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
+        this.updateDays();
+        // this.days.shift()
+        // if (this.end)
+        //     this.days.push(this.end)
+    }
+    travelBackward() {
+        this.pivot = this.pivot.addDayByNumber(-1);
+        this.end = this.pivot.subDayByNumber(this.pivotPos);
+        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
+        this.updateDays();
+        // this.days.pop()
+        // if (this.start)
+        //     this.days.unshift(this.start)
+    }
+}
+exports.Time = Time;
+class Coordinate {
+}
+class Timer {
+    updateDays() {
+    }
+    travelForward() {
+    }
+    travelBackward() {
+    }
+}
+exports.Timer = Timer;
+class WordCoordinate {
+}
+class TimeCoordCommander {
+    constructor(timer, coord) {
+        this.cbList = [];
+        this.timer = timer;
+        this.coord = coord;
+    }
+    updateDays() {
+        if (this.timer && this.coord) {
+        }
+    }
+    travelForward() {
+    }
+    travelBackward() {
+    }
+    notify(evt, arg) {
+    }
+    on(evt, cb) {
+    }
+}
+exports.TimeCoordCommander = TimeCoordCommander;
+class DateToCoord {
+    static fromDateToCoord(date) {
+        if (this.globalTime) {
+            const pivotDate = this.globalTime.pivot.date;
+            if (pivotDate.isAfter(date)) {
+                return -1 * pivotDate.daysBetween2Date(date);
+            }
+            else {
+                return pivotDate.daysBetween2Date(date);
+            }
+        }
+        else {
+            throw new Error('no globalTime');
+        }
+    }
+}
+DateToCoord.globalTime = null;
+exports.DateToCoord = DateToCoord;
+class TimeLine extends Container_1.default {
+}
+exports.TimeLine = TimeLine;
 
 
 /***/ })
