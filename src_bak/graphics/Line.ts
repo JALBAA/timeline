@@ -42,7 +42,7 @@ export class Path extends RenderableObject {
         this.node.setAttribute('y2', this.coord.y.add(this.height.div(new Grid(2))).toString())
     }
 }
-// @Styler
+@Styler
 export default class Line extends Container implements Styleable {
     leftHandle = new Handle
     rightHandle = new Handle

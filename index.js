@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -70,50 +70,278 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unit = 40;
-class Grid {
-    constructor(n) {
-        this._value = 0;
-        if (n instanceof Grid) {
-            this._value = n.valueOf();
-        }
-        else {
-            this._value = n * exports.unit;
-        }
-    }
-    get value() {
-        return this._value;
-    }
-    add(g) {
-        return new Grid((this._value + g.value) / exports.unit);
-    }
-    sub(g) {
-        return new Grid((this._value - g.value) / exports.unit);
-    }
-    mul(g) {
-        if (g instanceof Number) {
-            return new Grid(this._value * g);
-        }
-        else {
-            return new Grid((this._value / exports.unit) * (g.value / exports.unit));
-        }
-    }
-    div(g) {
-        if (g instanceof Number) {
-            return new Grid(this._value / g);
-        }
-        else {
-            return new Grid((this._value / exports.unit) / (g.value / exports.unit));
-        }
-    }
-    valueOf() {
-        return this.value;
-    }
-    toString() {
-        return this.value.toString();
+const style_1 = __webpack_require__(1);
+class InheritableStyle {
+    constructor() {
+        this.isInherit = false;
     }
 }
-exports.default = Grid;
+function select(key, obj) {
+    return null;
+}
+function getKeys(o) {
+    return Object.keys(o).map(k => k);
+}
+function getProperty(o, key) {
+    return o[key];
+}
+function setProperty(o, key, newValue) {
+    return o[key] = newValue;
+}
+class RenderObject {
+    constructor(cons) {
+        this.id = '';
+        this.padding = new style_1.Padding;
+        this.margin = new style_1.Margin;
+        this.x = 0;
+        this.y = 0;
+        this.globalX = 0;
+        this.globalY = 0;
+        this.width = new style_1.Unit('auto');
+        this.height = new style_1.Unit('auto');
+        this.computedWidth = new style_1.Unit('auto');
+        this.computedHeight = new style_1.Unit('auto');
+        this.classNames = [];
+        this.parent = null;
+        if (cons) {
+            if (cons.id)
+                this.id = cons.id;
+            if (cons.class)
+                this.classNames.push(cons.class);
+            if (cons.height)
+                this.computedHeight = this.height = cons.height;
+            if (cons.width)
+                this.computedWidth = this.width = cons.width;
+        }
+    }
+    addParent(parent) {
+        this.parent = parent;
+    }
+    removeParent() {
+        this.parent = null;
+        throw new Error('w');
+    }
+    isContainable() { return false; }
+    layout() {
+        // this.globalX = this.x
+        // this.globalY = this.y
+    }
+    draw() { }
+    destory() { }
+    changeStyle() { }
+    inheritStyle(parent, current, computed) {
+        getKeys(parent).forEach(key => {
+            const currentStyle = getProperty(current, key);
+            const parentStyle = getProperty(parent, key);
+            if (typeof currentStyle == 'string' && currentStyle == 'inherit') {
+                // console.log(computed)
+                setProperty(computed, key, parentStyle);
+            }
+        });
+    }
+    computeStyle() {
+    }
+}
+exports.RenderObject = RenderObject;
+// interface Layout {
+//     padding: Padding
+//     margin: Margin
+//     width: Unit
+//     height: Unit
+// }
+// interface FlexLayout {
+//     direction: FlexDirection
+// }
+class FlexItem extends RenderObject {
+    constructor(cons) {
+        super(cons);
+        this._flex = 0;
+        if (cons) {
+            if (cons.flex)
+                this.flex = cons.flex;
+            else
+                this.flex = 1;
+        }
+        else
+            this.flex = 1;
+    }
+    get flex() {
+        return this._flex;
+    }
+    set flex(val) {
+        this.notifyFlexChange(val - this._flex);
+        this._flex = val;
+    }
+    notifyFlexChange(change) {
+        if (this.parent) {
+            const p = this.parent;
+            p.flexItemSpaceChange(change);
+        }
+    }
+}
+exports.FlexItem = FlexItem;
+class RenderContainer extends FlexItem {
+    constructor(cons) {
+        super(cons);
+        this.type = ContainerType.Flex;
+        this.children = [];
+        if (cons && cons.children) {
+            cons.children.forEach(child => {
+                this.addChild(child);
+            });
+        }
+    }
+    map(cb) {
+        return this.children.map((item, index) => {
+            const i = item;
+            cb.call(this, i, index);
+            return i;
+        });
+    }
+    forEach(cb) {
+        this.children.map((item, index) => {
+            const i = item;
+            cb.call(this, i, index);
+        });
+    }
+    addChild(child) {
+        this.children.push(child);
+        child.addParent(this);
+    }
+    isContainable() { return true; }
+    removeChild(child) {
+        this.children = this.children.filter(item => item != child);
+    }
+    removeChildren() {
+        this.children.forEach(child => {
+            child.removeParent();
+        });
+        this.children = [];
+    }
+    select(key) {
+        return select(key, this);
+    }
+}
+exports.RenderContainer = RenderContainer;
+var ContainerType;
+(function (ContainerType) {
+    ContainerType["None"] = "none";
+    ContainerType["Flex"] = "flex";
+    ContainerType["Absolute"] = "absolute";
+})(ContainerType || (ContainerType = {}));
+var FlexDirection;
+(function (FlexDirection) {
+    FlexDirection["Vertical"] = "vertical";
+    FlexDirection["Horizontal"] = "horizontal";
+})(FlexDirection || (FlexDirection = {}));
+class FlexContainer extends RenderContainer {
+    constructor(cons) {
+        super(cons);
+        this.type = ContainerType.Flex;
+        this.direction = FlexDirection.Horizontal;
+        this.flexSum = 0;
+        this.alignItems = style_1.FlexAlign.Strech;
+        this.justifyContent = style_1.FlexAlign.Start;
+        if (cons) {
+            if (cons.alignItems) {
+                this.alignItems = cons.alignItems;
+            }
+            if (cons.justifyContent) {
+                this.justifyContent = cons.justifyContent;
+            }
+        }
+        // init flex sum
+        this.forEach(item => this.flexSum += item.flex);
+    }
+    layout() {
+        this.forEach((child, index) => {
+            if (this.direction == FlexDirection.Horizontal) {
+                child.globalX = child.x + this.globalX;
+                child.globalY = this.globalY;
+            }
+            else {
+                child.globalY = child.y + this.globalY;
+                child.globalX = this.globalX;
+            }
+        });
+    }
+    computeStyle() {
+        super.computeStyle();
+        // TODO: 优化算法
+        // let flexSum = this.flexSum
+        const specifiedSpaces = [new style_1.Unit(0)];
+        this.forEach((child, index) => {
+            // flexSum += child.flex
+            if (this.direction == FlexDirection.Horizontal && child.width.type != style_1.UnitType.Auto) {
+                specifiedSpaces.push(child.width);
+                child.computedWidth = child.width;
+                child.flex = 0;
+            }
+            else if (this.direction == FlexDirection.Vertical && child.height.type != style_1.UnitType.Auto) {
+                specifiedSpaces.push(child.height);
+                child.computedHeight = child.height;
+                child.flex = 0;
+            }
+        });
+        let flow = 0;
+        this.forEach((child, index) => {
+            const compute = (main, sub, parentMain, parentSub, origin, originSub) => {
+                if (origin.type == style_1.UnitType.Auto) {
+                    main.copy(style_1.Unit.mul(new style_1.Unit(child.flex / this.flexSum), style_1.Unit.sub(parentMain, ...specifiedSpaces)));
+                }
+                if (this.alignItems == style_1.FlexAlign.Strech) {
+                    if (originSub.type == style_1.UnitType.Auto) {
+                        sub.copy(parentSub);
+                    }
+                }
+                flow += main.value;
+            };
+            if (this.direction == FlexDirection.Horizontal) {
+                child.x = flow;
+                compute(child.computedWidth, child.computedHeight, this.computedWidth, this.computedHeight, child.width, child.height);
+            }
+            else if (this.direction == FlexDirection.Vertical) {
+                child.y = flow;
+                compute(child.computedHeight, child.computedWidth, this.computedHeight, this.computedWidth, child.height, child.width);
+            }
+        });
+    }
+    addChild(child) {
+        super.addChild(child);
+    }
+    flexItemSpaceChange(val) {
+        this.flexSum += val;
+    }
+}
+exports.FlexContainer = FlexContainer;
+class Row extends FlexContainer {
+    constructor() {
+        super(...arguments);
+        this.direction = FlexDirection.Horizontal;
+    }
+}
+class Column extends FlexContainer {
+    constructor() {
+        super(...arguments);
+        this.direction = FlexDirection.Vertical;
+    }
+}
+class RootContainer extends FlexContainer {
+    constructor(cons) {
+        super(cons);
+        this.direction = FlexDirection.Vertical;
+        this.computedWidth = this.width = cons.width;
+        this.computedHeight = this.height = cons.height;
+    }
+}
+exports.RootContainer = RootContainer;
+class AbsoluteRenderContainer extends FlexContainer {
+    constructor() {
+        super(...arguments);
+        this.type = ContainerType.Absolute;
+    }
+}
+exports.AbsoluteRenderContainer = AbsoluteRenderContainer;
 
 
 /***/ }),
@@ -123,127 +351,207 @@ exports.default = Grid;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const grid_1 = __webpack_require__(0);
-exports.UNIT = 10;
-let cid = 0;
-function Styler(cons) {
-    // const draw = cons.prototype.onDraw
-    // cons.prototype.onDraw = function (...args: []) {
-    //     this.style()
-    //     const superStyle = (sup: SuperStyle) => {
-    //         if (sup && sup.style) {
-    //             sup.style.apply(this)
-    //             if (sup.__proto__)
-    //                 superStyle(sup.__proto__)
-    //         }
-    //     }
-    //     // if (this.__proto__)
-    //         // superStyle(this.__proto__)
-    //     draw.apply(this, args)
-    // }
-    return cons;
-}
-exports.Styler = Styler;
-class RenderableObject {
-    constructor() {
-        this.coord = {
-            x: new grid_1.default(0),
-            y: new grid_1.default(0),
-        };
-        this.height = new grid_1.default(1);
-        this.width = new grid_1.default(1);
-        this.node = null;
-        this._parent = null;
-        this._children = [];
-        this._cid = 0;
-        this._cid = ++cid;
-    }
-    get parent() {
-        return this._parent;
-    }
-    get children() {
-        return this._children;
-    }
-    get cid() {
-        return this._cid;
-    }
-    addParent(parent) {
-        this._parent = parent;
-    }
-    removeParent() {
-        this._parent = null;
-    }
-    addChild(child) {
-        this._children.push(child);
-        child.addParent(this);
-        if (this.node && child.node) {
-            this.node.appendChild(child.node);
+var BorderType;
+(function (BorderType) {
+    BorderType["Solid"] = "solid";
+    BorderType["Dashed"] = "dashed";
+})(BorderType = exports.BorderType || (exports.BorderType = {}));
+var FlexAlign;
+(function (FlexAlign) {
+    FlexAlign["Center"] = "center";
+    FlexAlign["Start"] = "start";
+    FlexAlign["End"] = "end";
+    FlexAlign["Strech"] = "strech";
+})(FlexAlign = exports.FlexAlign || (exports.FlexAlign = {}));
+var UnitType;
+(function (UnitType) {
+    UnitType["PX"] = "px";
+    UnitType["REM"] = "rem";
+    UnitType["Percent"] = "percent";
+    UnitType["Auto"] = "auto";
+})(UnitType = exports.UnitType || (exports.UnitType = {}));
+class Unit {
+    constructor(value, type = UnitType.PX) {
+        this.type = UnitType.PX;
+        this.value = 0;
+        if (typeof value == 'string') {
+            if (value == 'auto') {
+                this.value = NaN;
+                this.type = UnitType.Auto;
+            }
+            else {
+                const valueAndType = value.split(/(.+)(px|rem|%)/);
+                if (valueAndType) {
+                    valueAndType.pop();
+                    valueAndType.shift();
+                    this.value = Number(valueAndType[0]);
+                    const type = valueAndType[1];
+                    switch (type) {
+                        case 'px':
+                            this.type = UnitType.PX;
+                            break;
+                        case 'rem':
+                            this.type = UnitType.REM;
+                            break;
+                        case '%':
+                            this.type = UnitType.Percent;
+                            break;
+                    }
+                }
+            }
+        }
+        else {
+            this.value = value;
+            this.type = type;
         }
     }
-    removeChild(target) {
-        this._children = this._children.filter(child => {
-            const r = child.cid != target.cid;
-            if (r && this.node && target.node) {
-                target.removeParent();
-                this.node.removeChild(target.node);
-            }
-            return r;
-        });
-    }
-    removeAll() {
-        this._children = this._children.filter(child => {
-            if (this.node && child.node) {
-                child.removeParent();
-                this.node.removeChild(child.node);
-            }
+    static _isTypeEqual(...args) {
+        // if (v1.type == v2.type) return true
+        // else return false
+        if (args.length == 0)
             return false;
-        });
+        else {
+            return args.every(arg => arg.type == args[0].type);
+        }
     }
-    _transform(parent, coord) {
-        const x = parent.coord.x.add(coord.x);
-        const y = parent.coord.y.add(coord.y);
-        if (parent.parent !== null) {
-            return this._transform(parent.parent, { x, y });
+    // static isTypeComputeable (v1: Unit, v2: Unit) : boolean {
+    //     if (v1.type != 'auto' && v2.type != 'auto') return true
+    //     else return false
+    // }
+    static _compute(sign, ...args) {
+        if (Unit._isTypeEqual(...args)) {
+            const unitType = args[0].type;
+            return new Unit(args.reduce((prev, cur) => {
+                return new Unit(sign(prev.value, cur.value), unitType);
+            }).value, unitType);
         }
         else {
-            return { x, y };
+            throw new Error('types not equal');
         }
     }
-    getWorldPos() {
-        if (this.parent === null) {
-            return this.coord;
-        }
-        else {
-            // 变换
-            return this._transform(this.parent, this.coord);
-        }
+    static add(...args) {
+        return Unit._compute((a, b) => { return a + b; }, ...args);
     }
-    translate(coord) {
-        // deepcopy，防止引用发生
-        this.coord = {
-            x: new grid_1.default(coord.x),
-            y: new grid_1.default(coord.y),
-        };
+    static sub(...args) {
+        return Unit._compute((a, b) => { return a - b; }, ...args);
     }
-    _nodeTranslate(coord) {
+    static mul(...args) {
+        return Unit._compute((a, b) => { return a * b; }, ...args);
     }
-    _draw(coord) {
+    static div(...args) {
+        return Unit._compute((a, b) => { return a / b; }, ...args);
     }
-    onDraw() {
+    toString() {
+        return this.value + this.type.toString();
     }
-    draw() {
-        this.beforeDraw();
-        // const coord = this.getWorldPos()
-        this.onDraw();
-        this.children.forEach(child => child.draw());
-        this.afterDraw();
-    }
-    beforeDraw() {
-    }
-    afterDraw() {
+    copy(val) {
+        this.value = val.value;
+        this.type = val.type;
     }
 }
-exports.default = RenderableObject;
+exports.Unit = Unit;
+class PixelUnit extends Unit {
+    constructor(value) {
+        super(value);
+    }
+}
+exports.PixelUnit = PixelUnit;
+class AutoUnit extends Unit {
+    constructor() {
+        super('auto');
+    }
+}
+exports.AutoUnit = AutoUnit;
+class PercentUnit extends Unit {
+    constructor(value) {
+        super(value, UnitType.Percent);
+    }
+}
+exports.PercentUnit = PercentUnit;
+class Box {
+    constructor(box) {
+        this.left = new Unit(0);
+        this.right = new Unit(0);
+        this.top = new Unit(0);
+        this.bottom = new Unit(0);
+        if (box) {
+            if (box.left)
+                this.left = box.left;
+            if (box.right)
+                this.right = box.right;
+            if (box.top)
+                this.top = box.top;
+            if (box.bottom)
+                this.bottom = box.bottom;
+        }
+    }
+}
+exports.Box = Box;
+class Padding extends Box {
+}
+exports.Padding = Padding;
+class Margin extends Box {
+}
+exports.Margin = Margin;
+class Color {
+    constructor(r, g = 0, b = 0) {
+        this.r = 0;
+        this.g = 0;
+        this.b = 0;
+        if (typeof r == 'string') {
+            if (r[0] != '#')
+                throw new Error('valid hex type');
+            r = r.replace(/^\#/, '');
+            this.r = Number(Color.hexToNumber(r.slice(0, 2)));
+            this.g = Number(Color.hexToNumber(r.slice(2, 4)));
+            this.b = Number(Color.hexToNumber(r.slice(4, 6)));
+        }
+        else {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+    }
+    static hexToNumber(s) {
+        function hexCharToNumber(char) {
+            switch (char) {
+                case 'a':
+                    return 10;
+                case 'b':
+                    return 11;
+                case 'c':
+                    return 12;
+                case 'd':
+                    return 13;
+                case 'e':
+                    return 14;
+                case 'f':
+                    return 15;
+                default:
+                    return Number(char);
+            }
+        }
+        const c1 = s[0];
+        const c2 = s[1];
+        return hexCharToNumber(c1) * hexCharToNumber(c2);
+    }
+}
+exports.Color = Color;
+class BorderStyle {
+}
+class BackgroundStyle {
+}
+class ElementStyle {
+}
+class TextStyle {
+}
+class FlexItem {
+    constructor() {
+        this.flex = 1;
+    }
+}
+class AbsoluteLayout {
+}
 
 
 /***/ }),
@@ -253,18 +561,118 @@ exports.default = RenderableObject;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const Global_1 = __webpack_require__(4);
-class Container extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(Global_1.SVGNS, 'g');
-    }
-    onDraw() {
-        this.node.setAttribute('transform', `translate(${this.coord.x}, ${this.coord.y})`);
-    }
+const manager_1 = __webpack_require__(3);
+const render_1 = __webpack_require__(0);
+const style_1 = __webpack_require__(1);
+const canvas_1 = __webpack_require__(4);
+// import { Stage, TextElement, CircleElement } from "./objects/RenderObject";
+// import { RenderContainer, RenderElement, FlexLayoutContainer, AbsoluteLayoutContainer } from "./graphics/Render";
+// import { Grid } from "./Grid";
+// 样式布局、实体关系、数据关联
+// const stage = new Stage('#app', 500, 400)
+// // const table = new RenderContainer
+// const bbaa = new CircleElement({
+//     id: 'cc',
+//     drawAttr: {
+//         borderWidth: 1,
+//         borderColor: '#ff3030',
+//     },
+//     layoutAttr: {
+//         width: 100,
+//         height: 100,
+//     }
+// })
+// console.log(bbaa)
+// const a = new RenderContainer ({
+//     id: 'aaa',
+//     children: [new TextElement({
+//         id: 'ac',
+//         text: '123',
+//     }), bbaa]
+// })
+// const b = new FlexLayoutContainer({
+//     id: 'ffe',
+//     layoutAttr: {
+//         width: 100,
+//         height: 200,
+//     }
+// })
+// const c = new AbsoluteLayoutContainer({
+//     id: 'ab',
+//     children: [
+//         new TextElement({
+//             id: 'bbbaaa',
+//             text: '1233',
+//         })
+//     ],
+// })
+// console.log(b, c)
+// console.log(a.id, a.children[0].id)
+// a.coord.x = new Grid(1)
+// a.coord.y = new Grid(1)
+// console.log(a.coord)
+// stage.addChild(a)
+const aaa = `
+    container: flexLayout, absoluteLayout
+
+`;
+const Child2Style = {};
+console.log(new style_1.Unit(500));
+const c = document.getElementById('canvas');
+if (c) {
+    const ctx = c.getContext('2d');
+    const a = new render_1.FlexContainer({
+        id: 'child2.container',
+        flex: 1,
+        children: [
+            new canvas_1.CanvasElement({
+                class: 'tt',
+                ctx,
+            }),
+            new canvas_1.CanvasElement({
+                class: 'tt',
+                ctx,
+            }),
+            new canvas_1.CanvasElement({
+                class: 'tt',
+                ctx,
+            }),
+            new canvas_1.CanvasElement({
+                class: 'tt',
+                ctx,
+            }),
+        ],
+    });
+    const b = new canvas_1.CanvasElement({
+        id: 'child1',
+        ctx,
+        height: new style_1.Unit(50),
+    });
+    const root = new render_1.RootContainer({
+        id: 'root',
+        width: new style_1.Unit(500),
+        height: new style_1.Unit(500),
+        children: [
+            b,
+            a,
+            new canvas_1.CanvasElement({
+                id: 'child33',
+                ctx,
+            }),
+        ],
+    });
+    setTimeout(() => {
+        a.flex = 2;
+    }, 1000);
+    setTimeout(() => {
+        a.height = new style_1.Unit(50);
+        a.width = new style_1.Unit(150);
+    }, 2000);
+    const manager = new manager_1.Manager(ctx);
+    manager.manage(root);
+    console.log(root);
 }
-exports.default = Container;
+// console.log(a)
 
 
 /***/ }),
@@ -274,43 +682,85 @@ exports.default = Container;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const grid_1 = __webpack_require__(0);
-var Sex;
-(function (Sex) {
-    Sex[Sex["Man"] = 0] = "Man";
-    Sex[Sex["Woman"] = 1] = "Woman";
-})(Sex = exports.Sex || (exports.Sex = {}));
-var LabourType;
-(function (LabourType) {
-    LabourType[LabourType["Owner"] = 0] = "Owner";
-    LabourType[LabourType["Partener"] = 1] = "Partener";
-})(LabourType = exports.LabourType || (exports.LabourType = {}));
-class Labour {
-    constructor() {
-        // jobs
-        this.jobs = [];
-        this.name = '';
-        this.givenName = '';
-        this.familyName = '';
-        this.sex = Sex.Man;
-        this.type = LabourType.Partener;
-    }
-    addJob(node) {
-        this.jobs.push(node);
-    }
-    get height() {
-        if (this.jobs.length > 0)
-            return this.jobs[0].height;
-        else
-            return new grid_1.default(0);
-    }
-    removeJob() {
-    }
-    setLabourType(type) {
-        this.type = type;
+class BaseManager {
+    constructor(root) {
+        this.root = root;
+        // window.requestAnimationFrame(() => {
+        //     this.renderFrame()
+        // })
     }
 }
-exports.default = Labour;
+class ComputeManager extends BaseManager {
+    computeStyle(node) {
+        node.computeStyle();
+        if (node.isContainable()) {
+            node.forEach(child => {
+                this.computeStyle(child);
+            });
+        }
+    }
+    renderFrame() {
+        this.computeStyle(this.root);
+        // super.renderFrame()
+    }
+}
+exports.ComputeManager = ComputeManager;
+class DrawManager extends BaseManager {
+    draw(node) {
+        node.draw();
+        if (node.isContainable()) {
+            node.forEach(child => {
+                this.draw(child);
+            });
+        }
+    }
+    renderFrame() {
+        this.draw(this.root);
+    }
+}
+exports.DrawManager = DrawManager;
+class LayoutManager extends BaseManager {
+    layout(node) {
+        node.layout();
+        if (node.isContainable()) {
+            node.forEach(child => {
+                this.layout(child);
+            });
+        }
+    }
+    renderFrame() {
+        this.layout(this.root);
+    }
+}
+exports.LayoutManager = LayoutManager;
+class Manager {
+    constructor(ctx) {
+        this.ctx = ctx;
+    }
+    manage(root) {
+        this.root = root;
+        this.compute = new ComputeManager(root);
+        this.layout = new LayoutManager(root);
+        this.draw = new DrawManager(root);
+        window.requestAnimationFrame(() => {
+            this.renderFrame();
+        });
+    }
+    renderFrame() {
+        if (this.root) {
+            this.ctx && this.ctx.clearRect(0, 0, this.root.width.value, this.root.height.value);
+        }
+        this.ctx && this.ctx.save();
+        this.compute && this.compute.renderFrame();
+        this.layout && this.layout.renderFrame();
+        this.draw && this.draw.renderFrame();
+        window.requestAnimationFrame(() => {
+            // this.renderFrame()
+        });
+        this.ctx && this.ctx.restore();
+    }
+}
+exports.Manager = Manager;
 
 
 /***/ }),
@@ -320,1042 +770,43 @@ exports.default = Labour;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SVGNS = 'http://www.w3.org/2000/svg';
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class SuperDate extends Date {
-    subDays(days) {
-        if (days < 0)
-            throw new Error('no negative');
-        this.setTime(this.getTime() + days * 1000 * 60 * 60 * 24);
+const render_1 = __webpack_require__(0);
+function color16() {
+    var r = Math.floor(Math.random() * 256);
+    var g = Math.floor(Math.random() * 256);
+    var b = Math.floor(Math.random() * 256);
+    var color = '#' + r.toString(16) + g.toString(16) + b.toString(16);
+    return color;
+}
+class CanvasElement extends render_1.FlexItem {
+    constructor(cons) {
+        super(cons);
+        this.ctx = cons.ctx;
     }
-    addDays(days) {
-        if (days < 0)
-            throw new Error('no negative');
-        this.setTime(this.getTime() + days * 1000 * 60 * 60 * 24);
-    }
-    daysBetween2Date(date) {
-        return Math.abs((this.getTime() - date.getTime()) / 24 / 60 / 60 / 1000);
-    }
-    isBefore(date) {
-        if (this.getTime() >= date.getTime()) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-    isAfter(date) {
-        if (this.getTime() <= date.getTime()) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-    update(date) {
-        this.setTime(date.getTime());
-        return this;
+    draw() {
+        this.ctx.fillStyle = color16();
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.globalX, this.globalY);
+        this.ctx.lineTo(this.globalX + this.computedWidth.value, this.globalY);
+        this.ctx.lineTo(this.globalX + this.computedWidth.value, this.globalY + this.computedHeight.value);
+        this.ctx.lineTo(this.globalX, this.globalY + this.computedHeight.value);
+        this.ctx.lineTo(this.globalX, this.globalY);
+        this.ctx.stroke();
+        this.ctx.closePath();
+        this.ctx.fillRect(this.globalX, this.globalY, this.computedWidth.value, this.computedHeight.value);
     }
 }
-exports.default = SuperDate;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const Stage_1 = __webpack_require__(7);
-const Debug_1 = __webpack_require__(8);
-const Table_1 = __webpack_require__(9);
-const RenderableJob_1 = __webpack_require__(10);
-const Labour_1 = __webpack_require__(3);
-const grid_1 = __webpack_require__(0);
-const body = document.querySelector('body');
-if (body) {
-    const stage = new Stage_1.default(body, 500, 500);
-    const debugGrid = new Debug_1.DebugGrid;
-    // stage.addChild(debugGrid)
-    const table = new Table_1.Table;
-    table.coord.x = new grid_1.default(1);
-    stage.addChild(table);
-    const labour1 = new RenderableJob_1.LabourIcon;
-    labour1.setLabourType(Labour_1.LabourType.Owner);
-    table.addLabour(labour1);
-    const labour2 = new RenderableJob_1.LabourIcon;
-    labour2.setLabourType(Labour_1.LabourType.Owner);
-    table.addLabour(labour2);
-    setTimeout(() => {
-        stage.draw();
-    });
-}
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-// import Coordinate from "./graphics/Coordinate";
-// import Drawable from "./interface/Drawable";
-// import Rail from "./graphics/Rail";
-// import ICoordinate from "./interface/ICoordinate";
-// export default class Stage extends Coordinate implements Drawable {
-//     // rails
-//     rails: Rail[] = []
-//     // template: String = `
-//     //     <svg viewBox = "">
-//     //     </svg>
-//     // `
-//     // template: String = ''
-//     node: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-//     constructor (height: number, width: number) {
-//         super()
-//         this.node.setAttribute('viewBox', `0 0 ${height} ${width}`)
-//         this.node.setAttribute('height', `${height}px`)
-//         this.node.setAttribute('width', `${width}px`)
-//     }
-//     addRail (rail: Rail) {
-//         this.rails.push(rail)
-//         this.addChild(rail)
-//     }
-//     removeRail (rail: Rail) {
-//         this.rails = this.rails.filter(_rail => _rail.cid != rail.cid)
-//         this.setChildren(this.children.filter(_rail => _rail.cid != rail.cid))
-//     }
-//     draw () {
-//     }
-// }
-const ns = 'http://www.w3.org/2000/svg';
-class Stage extends RenderableObject_1.default {
-    constructor(container, width, height) {
-        super();
-        this.node = document.createElementNS(ns, 'svg');
-        container.appendChild(this.node);
-        this.node.setAttribute('width', `${width}px`);
-        this.node.setAttribute('height', `${height}px`);
-        // this.node.setAttribute('viewBox', `0 0 ${width} ${height}`)
+exports.CanvasElement = CanvasElement;
+class CanvasContainer extends render_1.FlexContainer {
+    constructor(cons) {
+        super(cons);
+        this.ctx = cons.ctx;
+    }
+    draw() {
     }
 }
-exports.default = Stage;
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-class Tile extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        this.height = new grid_1.default(1);
-        this.width = new grid_1.default(1);
-        this.blackOrWhite = 'black';
-    }
-    onDraw() {
-        this.node.setAttribute('width', this.height.value.toString());
-        this.node.setAttribute('height', this.width.value.toString());
-        this.node.setAttribute('x', (this.coord.x.value /* - this.height.value/2*/).toString());
-        this.node.setAttribute('y', (this.coord.y.value /* - this.height.value/2*/).toString());
-        if (this.blackOrWhite == 'black')
-            this.node.setAttribute('style', 'stroke-width: 0;stroke: gray;fill: rgba(120,0,0,0.2);');
-        else
-            this.node.setAttribute('style', 'stroke-width: 0;stroke: gray;fill: rgba(120,255,255,0.2);');
-    }
-}
-class DebugGrid extends RenderableObject_1.default {
-    constructor() {
-        super();
-        this.node = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        for (let x = 0; x < 30; x++) {
-            for (let y = 0; y < 30; y++) {
-                const tile = new Tile();
-                if (x % 2 == 0) {
-                    if (y % 2 == 0) {
-                        tile.blackOrWhite = 'black';
-                    }
-                    else {
-                        tile.blackOrWhite = 'white';
-                    }
-                }
-                else {
-                    if (y % 2 == 0) {
-                        tile.blackOrWhite = 'white';
-                    }
-                    else {
-                        tile.blackOrWhite = 'black';
-                    }
-                }
-                tile.translate({
-                    x: new grid_1.default(x),
-                    y: new grid_1.default(y),
-                });
-                this.addChild(tile);
-            }
-        }
-    }
-    onDraw() {
-        // this.node.setAttribute('style', 'stroke-width: 1;stroke: gray;fill: rgba(0,0,0,0.4);')
-    }
-}
-exports.DebugGrid = DebugGrid;
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const Container_1 = __webpack_require__(2);
-const Labour_1 = __webpack_require__(3);
-const grid_1 = __webpack_require__(0);
-class Table extends Container_1.default {
-    addLabour(node) {
-        if (node.type == Labour_1.LabourType.Owner) {
-            super.addChild(node);
-            this.height = this.height.add(new grid_1.default(1));
-            node.coord.y = this.height;
-            node.coord.x = new grid_1.default(-1);
-        }
-        else
-            throw new Error('illegal type');
-    }
-    addChild(child) {
-        throw new Error('w');
-    }
-}
-exports.Table = Table;
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const Job_1 = __webpack_require__(11);
-const Labour_1 = __webpack_require__(3);
-const Line_1 = __webpack_require__(12);
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-const Railway_1 = __webpack_require__(13);
-const Container_1 = __webpack_require__(2);
-const Time_1 = __webpack_require__(14);
-class RenderableJob {
-    constructor() {
-        this.job = new Job_1.default('', '');
-        this.view = null;
-    }
-}
-exports.default = RenderableJob;
-class Text extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(ns, 'text');
-        this.textContent = '';
-    }
-    onDraw() {
-        this.node.textContent = this.textContent;
-    }
-}
-class Icon extends RenderableObject_1.default {
-    constructor() {
-        super();
-        this.node = document.createElementNS(ns, 'circle');
-        this.height = new grid_1.default(.5);
-    }
-    get width() {
-        // this.width == this.height, they are all refer to radius
-        return this.height;
-    }
-    set width(val) {
-        this.height = val;
-    }
-    onDraw() {
-        this.node.setAttribute('cx', this.coord.x.add(this.height).toString());
-        this.node.setAttribute('cy', this.coord.y.add(this.height).toString());
-        this.node.setAttribute('r', (this.height.value).toString());
-    }
-}
-exports.Icon = Icon;
-class LabourIcon extends Container_1.default {
-    constructor() {
-        super();
-        this.labour = new Labour_1.default;
-        this.jobs = [];
-        this.name = "";
-        this.icon = new Icon;
-        this.text = new Text;
-        this.addChild(this.icon);
-        this.addChild(this.text);
-    }
-    get type() {
-        return this.labour.type;
-    }
-    setLabourType(type) {
-        this.labour.setLabourType(type);
-    }
-    addJob(node) {
-        this.jobs.push(node);
-    }
-    onDraw() {
-        super.onDraw();
-        if (this.type == Labour_1.LabourType.Owner) {
-            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:yellow');
-        }
-        else {
-            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:pink');
-        }
-    }
-}
-exports.LabourIcon = LabourIcon;
-const ns = 'http://www.w3.org/2000/svg';
-class LineJob extends Line_1.default {
-    constructor() {
-        super(...arguments);
-        this.job = new Job_1.default('', '');
-        this.labours = [];
-        // height: Grid = new Grid(1)
-        this._height = new grid_1.default(1);
-    }
-    set height(val) {
-        this._height = val;
-    }
-    get height() {
-        return this._height;
-    }
-    set devStart(date) {
-        this.job.devStart = date;
-    }
-    set devEnd(date) {
-        if (date.isBefore(this.devStart))
-            throw new Error('结束日期不能超过开始日期');
-        this.job.devEnd = date;
-    }
-    get devStart() {
-        return this.job.devStart;
-    }
-    get devEnd() {
-        return this.job.devEnd;
-    }
-    get testStart() {
-        return this.job.testStart;
-    }
-    get testEnd() {
-        return this.job.testEnd;
-    }
-    get release() {
-        return this.job.release;
-    }
-    get integrationStart() {
-        return this.job.integrationStart;
-    }
-    get integrationEnd() {
-        return this.job.integrationEnd;
-    }
-    get finished() {
-        return this.job.finished;
-    }
-    addOwner(owner) {
-        this.job.addOwner(owner);
-        this.labours[0] = owner;
-        this.addChild(owner);
-    }
-    addPartener(partener) {
-        if (this.labours.length == 0)
-            throw new Error('必须有onwer');
-        if (this.labours.filter(labour => {
-            if (labour == partener) {
-                return true;
-            }
-        }).length > 0) {
-            throw new Error('不能重复添加');
-        }
-        this.job.addPartener(partener);
-        this.labours.push(partener);
-        this.addChild(partener);
-        this.height = new grid_1.default(2);
-    }
-    onDraw() {
-        const startPos = Time_1.DateToCoord.fromDateToCoord(this.devStart);
-        this.width = new grid_1.default(this.devStart.daysBetween2Date(this.devEnd));
-        this.translate({
-            x: new grid_1.default(startPos),
-            y: this.coord.y,
-        });
-        this.labours.forEach((labour, idx) => {
-            labour.translate({
-                x: (new grid_1.default(idx)).add(labour.width).sub(labour.width),
-                y: new grid_1.default(1),
-            });
-        });
-        super.onDraw();
-    }
-}
-exports.LineJob = LineJob;
-class JobRailway extends Railway_1.default {
-    constructor() {
-        super(...arguments);
-        this.jobs = [];
-    }
-    addJob(job) {
-        this.jobs.push(job);
-        this.railway.addChild(job);
-    }
-}
-exports.JobRailway = JobRailway;
-// export class LineJob extends Container {
-//     // jobs: Job[],
-//     // labours: Labour[],
-//     node: SVGGElement = document.createElementNS(ns, 'g')
-//     railway: Railway = new Railway
-//     jobs: JobLine[] = []
-//     get width () {
-//         return this.railway.width
-//     }
-//     set width (val: Grid) {
-//         this.width = val
-//         this.railway.width = val
-//     }
-//     constructor () {
-//         super()
-//         this.railway.translate({
-//             x: new Grid(0),
-//             y: new Grid(1),
-//         })
-//         this.height = new Grid(4)
-//     }
-//     _draw () {
-//         this.node.setAttribute('cx', this.coord.x.toString())
-//         this.node.setAttribute('cy', this.coord.y.toString())
-//         this.node.setAttribute('r', (this.height.value).toString())
-//     }
-// }
-// export class LineJob extends RenderableJob implements Renderable {
-//     set coord (val: Coord) {
-//         this.view.coord = val
-//     }
-//     get coord () {
-//         return this.view.coord
-//     }
-//     set height (val: Grid) {
-//         this.view.height = val
-//     }
-//     get height () {
-//         return this.view.height
-//     }
-//     set width (val: Grid) {
-//         this.view.height = val
-//     }
-//     get width () {
-//         return this.view.height
-//     }
-//     view: Line = new Line
-//     constructor (title: string, info: string) {
-//         super()
-//         this.job.title = title
-//         this.job.info = info
-//     }
-//     addParent (parent: RenderableObject) {
-//         this.view.addParent(parent)
-//     }
-//     removeParent () {
-//         this.view.removeParent()
-//     }
-//     addChild (child: RenderableObject) {
-//         this.view.addChild(child)
-//     }
-//     removeChild (target: RenderableObject) {
-//         this.view.removeChild(target)
-//     }
-//     removeAll () {
-//         this.view.removeAll()
-//     }
-//     getWorldPos (): Coord {
-//         return this.view.getWorldPos()
-//     }
-//     translate (coord: Coord) {
-//         this.view.translate(coord)
-//     }
-//     draw () {
-//         this.view.draw()
-//     }
-// }
-// class IconJob {
-// }
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const Labour_1 = __webpack_require__(3);
-const SuperDate_1 = __webpack_require__(5);
-var JobStatus;
-(function (JobStatus) {
-    JobStatus[JobStatus["None"] = 0] = "None";
-    JobStatus[JobStatus["Done"] = 1] = "Done";
-    JobStatus[JobStatus["Doing"] = 2] = "Doing";
-    JobStatus[JobStatus["Pending"] = 3] = "Pending";
-    JobStatus[JobStatus["Pause"] = 4] = "Pause";
-    JobStatus[JobStatus["Timeout"] = 5] = "Timeout";
-})(JobStatus = exports.JobStatus || (exports.JobStatus = {}));
-var JobType;
-(function (JobType) {
-    JobType[JobType["None"] = 0] = "None";
-    JobType[JobType["Default"] = 1] = "Default";
-})(JobType = exports.JobType || (exports.JobType = {}));
-class Schedule {
-    constructor() {
-        this.devStart = new SuperDate_1.default;
-        this.devEnd = new SuperDate_1.default;
-        this.testStart = new SuperDate_1.default;
-        this.testEnd = new SuperDate_1.default;
-        this.release = new SuperDate_1.default;
-        this.integrationStart = new SuperDate_1.default;
-        this.integrationEnd = new SuperDate_1.default;
-        this.finished = new SuperDate_1.default;
-    }
-}
-exports.Schedule = Schedule;
-class Job {
-    constructor(title, info, start, end) {
-        this.status = JobStatus.None;
-        this.schedule = new Schedule;
-        this.type = JobType.Default;
-        this.title = '';
-        this.info = '';
-        if (!start)
-            this.devStart = new SuperDate_1.default;
-        this.initSchedule(start, end);
-    }
-    set devStart(date) {
-        this.schedule.devStart = date;
-    }
-    set devEnd(date) {
-        if (date.isBefore(this.devStart))
-            throw new Error('结束日期不能超过开始日期');
-        this.schedule.devEnd = date;
-    }
-    set testStart(date) {
-    }
-    set testEnd(date) {
-    }
-    set release(date) {
-    }
-    set integrationStart(date) {
-    }
-    set integrationEnd(date) {
-    }
-    set finished(date) {
-    }
-    get devStart() {
-        return this.schedule.devStart;
-    }
-    get devEnd() {
-        return this.schedule.devEnd;
-    }
-    get testStart() {
-        return this.schedule.testStart;
-    }
-    get testEnd() {
-        return this.schedule.testEnd;
-    }
-    get release() {
-        return this.schedule.release;
-    }
-    get integrationStart() {
-        return this.schedule.integrationStart;
-    }
-    get integrationEnd() {
-        return this.schedule.integrationEnd;
-    }
-    get finished() {
-        return this.schedule.finished;
-    }
-    initSchedule(start, end) {
-        if (start) {
-            this.devStart = start;
-        }
-        if (end) {
-            this.devEnd = end;
-        }
-        else {
-            this.devEnd.update(this.devStart).addDays(1);
-        }
-    }
-    // owner: Owner | null = null
-    // partener: Partener[] | null = null
-    addOwner(owner) {
-        owner.setLabourType(Labour_1.LabourType.Owner);
-    }
-    addPartener(partener) {
-        partener.setLabourType(Labour_1.LabourType.Partener);
-    }
-}
-exports.default = Job;
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-// import Handle from "./Handle";
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-const Container_1 = __webpack_require__(2);
-const Global_1 = __webpack_require__(4);
-class Handle extends RenderableObject_1.default {
-    constructor() {
-        super();
-        this.node = document.createElementNS(Global_1.SVGNS, 'circle');
-        this.radius = new grid_1.default(.5);
-    }
-    get width() {
-        return this.radius.mul(new grid_1.default(2));
-    }
-    get height() {
-        return this.radius.mul(new grid_1.default(2));
-    }
-    set width(val) {
-        this.radius = val.div(new grid_1.default(2));
-    }
-    set height(val) {
-        this.radius = val.div(new grid_1.default(2));
-    }
-    onDraw() {
-        this.node.setAttribute('cx', this.coord.x.add(this.radius).toString());
-        this.node.setAttribute('cy', this.coord.y.add(this.radius).toString());
-        this.node.setAttribute('r', (this.radius.value).toString());
-    }
-}
-exports.Handle = Handle;
-class Path extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(Global_1.SVGNS, 'line');
-    }
-    onDraw() {
-        this.node.setAttribute('x1', this.coord.x.toString());
-        this.node.setAttribute('y1', this.coord.y.add(this.height.div(new grid_1.default(2))).toString());
-        this.node.setAttribute('x2', (this.coord.x.add(this.width)).value.toString());
-        this.node.setAttribute('y2', this.coord.y.add(this.height.div(new grid_1.default(2))).toString());
-    }
-}
-exports.Path = Path;
-// @Styler
-class Line extends Container_1.default {
-    constructor() {
-        super();
-        this.leftHandle = new Handle;
-        this.rightHandle = new Handle;
-        this.path = new Path;
-        this._width = new grid_1.default(1);
-        this.addChild(this.path);
-        // this.path.translate({
-        //     x: this.path.coord.x,
-        //     y: new Grid(0),//this.path.height.div(new Grid(2)),
-        // })
-        this.addChild(this.leftHandle);
-        // this.leftHandle.translate({
-        //     x: this.leftHandle.width,
-        //     y: new Grid(0), //this.height.div(new Grid(2)),
-        // })
-        this.addChild(this.rightHandle);
-    }
-    get width() {
-        return this._width;
-    }
-    set width(l) {
-        if (this.rightHandle) {
-            const coord = this.rightHandle.coord;
-            this._width = l;
-            this.rightHandle.translate({
-                x: l.sub(this.rightHandle.width),
-                y: new grid_1.default(0),
-            });
-            this.path.width = l;
-        }
-    }
-    style() {
-        if (this.node)
-            this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:red');
-    }
-}
-exports.default = Line;
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-const Container_1 = __webpack_require__(2);
-const ns = 'http://www.w3.org/2000/svg';
-class RailwayEntity extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.height = new grid_1.default(1);
-        this.coord = {
-            x: new grid_1.default(0),
-            y: new grid_1.default(0),
-        };
-        this.node = document.createElementNS(ns, 'rect');
-    }
-    onDraw() {
-        if (this.parent) {
-            this.node.setAttribute('height', this.height.toString());
-            this.node.setAttribute('width', (this.parent.width).mul(new grid_1.default(50)).value.toString());
-        }
-        this.node.setAttribute('x', this.coord.x.toString());
-        this.node.setAttribute('y', this.coord.y.toString());
-        // this.node.setAttribute('y', (y.add(new Grid(.5)).value/* - this.height.value/2*/).toString())
-        this.node.setAttribute('style', 'stroke-width: 0;stroke: gray;fill: rgba(0,0,0,0.2);');
-    }
-}
-class Railway extends Container_1.default {
-    constructor() {
-        super();
-        // _draw () {
-        //     this._detectCollision()
-        // }
-        // detect lines coliision
-        this.railway = new RailwayEntity;
-        this.addChild(this.railway);
-    }
-    onDraw() {
-        this._detectCollision();
-        super.onDraw();
-    }
-    _detectCollision() {
-        // 
-    }
-}
-exports.default = Railway;
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const RenderableObject_1 = __webpack_require__(1);
-const grid_1 = __webpack_require__(0);
-const Container_1 = __webpack_require__(2);
-const SuperDate_1 = __webpack_require__(5);
-const Global_1 = __webpack_require__(4);
-class DayTileBG extends RenderableObject_1.default {
-    constructor() {
-        super();
-        this.node = document.createElementNS(Global_1.SVGNS, 'rect');
-        this.oddOrEven = 'even';
-        if (this._cid % 2 != 0) {
-            this.oddOrEven = 'odd';
-        }
-    }
-    onDraw() {
-        const newY = (this.coord.y.sub(this.height));
-        if (this.oddOrEven == 'even') {
-            this.node.setAttribute('style', 'stroke-width: .5;stroke: gray;fill: rgba(255,255,255,1);');
-        }
-        else {
-            this.node.setAttribute('style', 'stroke-width: .5;stroke: gray;fill: rgba(200,200,200,1);');
-        }
-        this.node.setAttribute('x', this.coord.x.toString());
-        this.node.setAttribute('y', newY.toString());
-        this.node.setAttribute('width', this.width.toString());
-        this.node.setAttribute('height', this.height.toString());
-    }
-}
-class DayText extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(Global_1.SVGNS, 'text');
-    }
-    onDraw() {
-        const newY = this.coord.y.sub(new grid_1.default(.3));
-        const newX = this.coord.x.add(new grid_1.default(.2));
-        this.node.setAttribute('font-size', '12px');
-        this.node.setAttribute('x', newX.toString());
-        this.node.setAttribute('y', newY.toString());
-    }
-}
-class DayTile extends Container_1.default {
-    constructor(day) {
-        super();
-        // node: SVGTextElement = document.createElementNS(ns, 'text')
-        this.day = null;
-        this.bg = new DayTileBG;
-        this.text = new DayText;
-        this.addChild(this.bg);
-        this.addChild(this.text);
-        this.text.translate(this.coord);
-        this.bg.translate(this.coord);
-        if (day) {
-            this.day = day;
-        }
-    }
-    afterDraw() {
-        const d = this.day ? (this.day.getNumber().toString()) : '';
-        this.text.node.innerHTML = this.day ? d : 'no date';
-    }
-}
-class MonthTile extends RenderableObject_1.default {
-    constructor() {
-        super(...arguments);
-        this.node = document.createElementNS(Global_1.SVGNS, 'g');
-    }
-}
-class TimeRuler extends Container_1.default {
-    addChild(child) {
-        super.addChild(child);
-    }
-    removeChild(child) {
-        super.removeChild(child);
-    }
-    updateData(days, months, pivotPos) {
-        this.removeAll();
-        days.forEach((day, index) => {
-            const tile = new Day(day);
-            if (day.getNumber() == 1) {
-                months.forEach((dayInMonth) => {
-                    const tile = new Month(dayInMonth);
-                    tile.translate({
-                        x: new grid_1.default(index - pivotPos),
-                        y: new grid_1.default(0),
-                    });
-                    this.addChild(tile);
-                });
-            }
-            tile.translate({
-                x: new grid_1.default(index - pivotPos),
-                y: new grid_1.default(1),
-            });
-            this.addChild(tile);
-        });
-    }
-}
-exports.TimeRuler = TimeRuler;
-class MoveableDate extends Container_1.default {
-    constructor(d) {
-        super();
-        this.date = new SuperDate_1.default;
-        if (d) {
-            this.date = new SuperDate_1.default(d.getTime());
-        }
-    }
-    addDayByNumber(d) {
-        return new Day(new SuperDate_1.default(this.date.getTime() + d * 1000 * 60 * 60 * 24));
-    }
-    subDayByNumber(d) {
-        return new Day(new SuperDate_1.default(this.date.getTime() - d * 1000 * 60 * 60 * 24));
-    }
-    forward() {
-        this.date = new SuperDate_1.default(this.date.getTime() + 1000 * 60 * 60 * 24);
-    }
-    backward() {
-        this.date = new SuperDate_1.default(this.date.getTime() - 1000 * 60 * 60 * 24);
-    }
-    getTime() {
-        return this.date.getTime();
-    }
-    getNumber() { }
-}
-class Year extends MoveableDate {
-}
-exports.Year = Year;
-class Month extends MoveableDate {
-    constructor(day) {
-        super(day);
-        this.bg = new DayTileBG;
-        this.text = new DayText;
-        this.bg.oddOrEven = 'even';
-        this.addChild(this.bg);
-        this.addChild(this.text);
-        this.text.translate(this.coord);
-        this.bg.translate(this.coord);
-    }
-    getNumber() {
-        return this.date.getMonth();
-    }
-    afterDraw() {
-        this.text.node.innerHTML = this.getNumber().toString();
-    }
-}
-exports.Month = Month;
-class Day extends MoveableDate {
-    constructor(day) {
-        super(day);
-        this.bg = new DayTileBG;
-        this.text = new DayText;
-        this.addChild(this.bg);
-        this.addChild(this.text);
-        this.text.translate(this.coord);
-        this.bg.translate(this.coord);
-    }
-    afterDraw() {
-        this.text.node.innerHTML = this.getNumber().toString();
-    }
-    getNumber() {
-        return this.date.getDate();
-    }
-}
-exports.Day = Day;
-class DayTiles extends Container_1.default {
-}
-class MonthTiles extends Container_1.default {
-}
-class Tt extends Container_1.default {
-}
-exports.Tt = Tt;
-class Time extends TimeRuler {
-    constructor(d = null) {
-        super();
-        this.days = [];
-        this.months = [];
-        this.years = [];
-        this.end = null;
-        this.start = null;
-        // pivot就是屏幕左边原点
-        // 显示30天，前15，后15
-        this.pivot = new Day(new SuperDate_1.default);
-        this.pivotPos = 5;
-        this.dayLength = 30;
-        if (d) {
-            if (d instanceof Day) {
-                this.pivot = d;
-            }
-            else if (d instanceof SuperDate_1.default) {
-                this.pivot = new Day(d);
-            }
-        }
-        this.end = this.pivot.subDayByNumber(this.pivotPos);
-        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
-        this.updateDays();
-    }
-    updateDays() {
-        if (this.end && this.start) {
-            let pointer = new Day(new SuperDate_1.default(this.end.date.getTime()));
-            this.days = [];
-            while (pointer.getTime() < this.start.getTime()) {
-                this.days.push(new Day(pointer));
-                if (pointer.getNumber() == 1) {
-                    const month = new Month(pointer);
-                    this.months.push(month);
-                }
-                pointer = pointer.addDayByNumber(1);
-            }
-        }
-        this.updateData(this.days, this.months, this.pivotPos);
-    }
-    travelForward() {
-        this.pivot = this.pivot.addDayByNumber(1);
-        this.end = this.pivot.subDayByNumber(this.pivotPos);
-        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
-        this.updateDays();
-        // this.days.shift()
-        // if (this.end)
-        //     this.days.push(this.end)
-    }
-    travelBackward() {
-        this.pivot = this.pivot.addDayByNumber(-1);
-        this.end = this.pivot.subDayByNumber(this.pivotPos);
-        this.start = this.pivot.addDayByNumber(this.dayLength - this.pivotPos);
-        this.updateDays();
-        // this.days.pop()
-        // if (this.start)
-        //     this.days.unshift(this.start)
-    }
-}
-exports.Time = Time;
-class Coordinate {
-}
-class Timer {
-    updateDays() {
-    }
-    travelForward() {
-    }
-    travelBackward() {
-    }
-}
-exports.Timer = Timer;
-class WordCoordinate {
-}
-class TimeCoordCommander {
-    constructor(timer, coord) {
-        this.cbList = [];
-        this.timer = timer;
-        this.coord = coord;
-    }
-    updateDays() {
-        if (this.timer && this.coord) {
-        }
-    }
-    travelForward() {
-    }
-    travelBackward() {
-    }
-    notify(evt, arg) {
-    }
-    on(evt, cb) {
-    }
-}
-exports.TimeCoordCommander = TimeCoordCommander;
-class DateToCoord {
-    static fromDateToCoord(date) {
-        if (this.globalTime) {
-            const pivotDate = this.globalTime.pivot.date;
-            if (pivotDate.isAfter(date)) {
-                return -1 * pivotDate.daysBetween2Date(date);
-            }
-            else {
-                return pivotDate.daysBetween2Date(date);
-            }
-        }
-        else {
-            throw new Error('no globalTime');
-        }
-    }
-}
-DateToCoord.globalTime = null;
-exports.DateToCoord = DateToCoord;
-class TimeLine extends Container_1.default {
-}
-exports.TimeLine = TimeLine;
 
 
 /***/ })
 /******/ ]);
+//# sourceMappingURL=index.js.map

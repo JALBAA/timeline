@@ -16,9 +16,11 @@ export default class RenderableJob {
 }
 class Text extends RenderableObject {
     node: SVGTextElement = document.createElementNS(ns, 'text')
-    textContent: String = ''
+    textContent: string = ''
     onDraw () {
         this.node.textContent = this.textContent
+        this.node.setAttribute('x', this.coord.x.toString())
+        this.node.setAttribute('y', this.coord.y.toString())
     }
 }
 export class Icon extends RenderableObject {
@@ -44,13 +46,20 @@ export class Icon extends RenderableObject {
 export class LabourIcon extends Container implements Labourable {
     labour: Labour = new Labour
     jobs: Array <Job & RenderableObject> = []
-    name: string = ""
+    private _name: string = ""
     icon: Icon = new Icon
     text: Text = new Text
     constructor () {
         super()
         this.addChild(this.icon)
         this.addChild(this.text)
+    }
+    set name (val: string) {
+        this._name = val
+        this.text.textContent = val
+    }
+    get name () {
+        return this.name
     }
     get type () {
         return this.labour.type
@@ -63,6 +72,8 @@ export class LabourIcon extends Container implements Labourable {
     }
     onDraw () {
         super.onDraw()
+        this.text.coord.x = this.icon.height.div(new Grid(2))
+        this.text.coord.y = this.icon.height
         if (this.type == LabourType.Owner) {
             this.node.setAttribute('style', 'stroke:black;stroke-width:2;fill:yellow')
         } else {

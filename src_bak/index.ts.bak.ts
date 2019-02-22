@@ -4,11 +4,14 @@ import Grid from "./grid";
 import Railway from "./graphics/Railway";
 import { DebugGrid } from "./utils/Debug";
 import { Time, Day, DateToCoord} from "./Time";
-import {LineJob, LabourIcon} from "./jobs/RenderableJob";
+import {LineJob, LabourIcon, JobRailway} from "./jobs/RenderableJob";
 
 import Task from './jobs/Task'
 import SuperDate from "./SuperDate";
 import Container from "./graphics/Container";
+import { Row } from "./Table";
+import Labour from "./workers/Labour";
+import Job from "./jobs/Job";
 
 const tast = new Task
 
